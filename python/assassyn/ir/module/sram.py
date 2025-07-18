@@ -6,7 +6,6 @@ from ..block import Condition
 from ..dtype import Bits
 from ..expr import Bind
 from ..value import Value
-from ..expr import mem_read, mem_write
 
 
 class SRAM(Downstream): # pylint: disable=too-many-instance-attributes
