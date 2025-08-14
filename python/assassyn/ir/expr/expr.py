@@ -56,7 +56,7 @@ class Expr(Value):
         #pylint: disable=import-outside-toplevel
         from ..array import Array
         from ..const import Const
-        from ..module import Port
+        from ..module import Port, Module
         from ..dtype import RecordValue
         self.opcode = opcode
         self.loc = self.parent = None
@@ -70,6 +70,8 @@ class Expr(Value):
                 wrapped = Operand(i, self)
                 i.users.append(wrapped)
             elif isinstance(i, (Const, str, RecordValue)):
+                wrapped = Operand(i, self)
+            elif isinstance(i, Module):
                 wrapped = Operand(i, self)
             else:
                 assert False, f'{i} is a {type(i)}'

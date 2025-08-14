@@ -304,23 +304,51 @@ assert!(cond.count_ones() == 1, \"Select1Hot: condition is not 1-hot\");''']
 
             elif intrinsic == Intrinsic.BARRIER:
                 code.append("/* Barrier */")
-            elif intrinsic == Intrinsic.MEM_READ:
-                array = node.args[0]
-                idx = node.args[1]
-                array_name = namify(array.name)
+
+            elif intrinsic == Intrinsic.SEND_READ_REQUEST:
+                idx = node.args[0]
                 idx_val = dump_rval_ref(self.module_ctx, self.sys, idx)
-                module_writer = self.module_name
-                self.modules_for_callback["memory"] = module_writer
-                self.modules_for_callback["store"] = array_name
+
                 code.append(f"""{{
                     unsafe {{
                         let mem_interface = Arc::clone(&sim.mem_interface);
                         let success = mem_interface.as_ref().send_request({idx_val} as i64, false, rust_callback, sim as *const _ as *mut _,);
-                        if !success {{
-                            return false
-                        }}
+                        success
                     }}
                 }}""")
+
+            elif intrinsic == Intrinsic.SEND_WRITE_REQUEST:
+                idx = node.args[0]
+                we = node.args[1]
+                idx_val = dump_rval_ref(self.module_ctx, self.sys, idx)
+                we_val = dump_rval_ref(self.module_ctx, self.sys, we)
+                val = dump_rval_ref(self.module_ctx, self.sys, node) 
+                code.append(f"""{{
+                    let {val} = unsafe {{
+                        if {we_val} {{
+                            let mem_interface = Arc::clone(&sim.mem_interface);
+                            let success = mem_interface.as_ref().send_request({idx_val} as i64, true, rust_callback, sim as *const _ as *mut _,);
+                            success
+                        }} else {{
+                            false
+                        }}
+                    }}
+                }};""")
+            elif intrinsic == Intrinsic.HAS_MEM_RESP:
+                if not self.modules_for_callback.get("MemUser_rdata"):
+                    code.append("false")
+                else:
+                    val = dump_rval_ref(self.module_ctx, self.sys, node) 
+                    mem_rdata = self.modules_for_callback["MemUser_rdata"]
+                    code.append(f"let {val} = sim.{mem_rdata}.payload.is_empty() == false")
+            
+            elif intrinsic == Intrinsic.MEM_RESP:
+                if not self.modules_for_callback.get("MemUser_rdata"):
+                    code.append("0")
+                else:
+                    val = dump_rval_ref(self.module_ctx, self.sys, node)
+                    mem_rdata = self.modules_for_callback["MemUser_rdata"]
+                    code.append(f"let {val} = sim.{mem_rdata}.payload.front()")
 
             elif intrinsic == Intrinsic.MEM_WRITE:
                 array = node.args[0]
@@ -333,17 +361,9 @@ assert!(cond.count_ones() == 1, \"Select1Hot: condition is not 1-hot\");''']
                 self.modules_for_callback["memory"] = module_writer
                 self.modules_for_callback["store"] = array_name
                 code.append(f"""{{
-                    unsafe {{
-                        let mem_interface = Arc::clone(&sim.mem_interface);
-                        let success = mem_interface.as_ref().send_request({idx_val} as i64, true, rust_callback, sim as *const _ as *mut _,);
-                        if success {{
-                            let stamp = sim.stamp - sim.stamp % 100 + 50;
-                            sim.{array_name}.write.push(
-                                ArrayWrite::new(stamp, {idx_val} as usize, {value_val}.clone(), "{module_writer}"));
-                        }} else {{
-                            sim.stamp = sim.stamp - sim.stamp % 100 + 50;
-                        }}
-                    }}
+                    let stamp = sim.stamp - sim.stamp % 100 + 50;
+                    sim.{array_name}.write.push(
+                        ArrayWrite::new(stamp, {idx_val} as usize, {value_val}.clone(), "{module_writer}"));
                 }}""")
 
 
