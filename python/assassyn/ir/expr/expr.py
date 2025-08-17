@@ -58,6 +58,8 @@ class Expr(Value):
         from ..const import Const
         from ..module import Port, Module
         from ..dtype import RecordValue
+        from ...builder import Singleton
+        from ..module.downstream import Downstream
         self.opcode = opcode
         self.loc = self.parent = None
         # NOTE: We only wrap values in Operand, not Ports or Arrays
@@ -67,6 +69,19 @@ class Expr(Value):
             if isinstance(i, (Array, Port)):
                 i.users.append(self)
             elif isinstance(i, Expr):
+                # Check module scoping rules for expressions
+                current_module = Singleton.builder.current_module
+                expr_module = i.parent.module if i.parent else None
+                
+                if current_module and expr_module and not isinstance(current_module, Downstream):
+                    # If we're in a regular Module (not Downstream), the expression must be from the same module
+                    if current_module != expr_module:
+                        raise ValueError(
+                            f"Invalid module scoping: Expression from module '{expr_module}' "
+                            f"cannot be used in module '{current_module}'. "
+                            "Combinational signals can only be used within the same module "
+                            "or in downstream modules."
+                        )
                 wrapped = Operand(i, self)
                 i.users.append(wrapped)
             elif isinstance(i, (Const, str, RecordValue)):
