@@ -2,6 +2,8 @@ import assassyn
 from assassyn.frontend import *
 from assassyn import backend
 from assassyn import utils
+from assassyn.ir.module.downstream import Downstream, combinational
+
 
 
 class MemUser(Module):
@@ -16,9 +18,22 @@ class MemUser(Module):
         width = self.rdata.dtype.bits
         rdata = self.pop_all_ports(False)
         rdata = rdata.bitcast(Int(width))
-        k = Int(width)(128)
-        delta = rdata + k
-        log('{} + {} = {}', rdata, k, delta)
+        handle_user = handler(width, rdata)
+        handle_user.build()
+
+class handler(Downstream):
+
+    def __init__(self, width, rdata):
+        super().__init__()
+        self.width = width
+        self.rdata = rdata
+
+    @combinational
+    def build(self):
+        k = Int(self.width)(128)
+        delta = self.rdata + k
+        log('{} + {} = {}', self.rdata, k, delta)
+
 
 
 class Driver(Module):
