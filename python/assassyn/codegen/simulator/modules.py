@@ -346,7 +346,6 @@ assert!(cond.count_ones() == 1, \"Select1Hot: condition is not 1-hot\");''']
                 else:
                     mem_rdata = self.modules_for_callback["MemUser_rdata"]
                     code.append(f"let {val} = sim.{mem_rdata}.payload.is_empty() == false")
-            
             elif intrinsic == Intrinsic.MEM_RESP:
                 val = dump_rval_ref(self.module_ctx, self.sys, node)
                 if not self.modules_for_callback.get("MemUser_rdata"):

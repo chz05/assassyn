@@ -44,19 +44,16 @@ class Intrinsic(Expr):
     def args(self):
         '''Get the arguments of this intrinsic.'''
         return self._operands
-    
     @property
     def dtype(self):
         from ..dtype import Bits
-        if self.opcode in [Intrinsic.HAS_MEM_RESP, Intrinsic.SEND_READ_REQUEST, Intrinsic.SEND_WRITE_REQUEST]:
+        '''Get the data type of this intrinsic.'''
+        if self.opcode in [Intrinsic.HAS_MEM_RESP, Intrinsic.SEND_READ_REQUEST, 
+        Intrinsic.SEND_WRITE_REQUEST]:
             return Bits(1)
         if self.opcode == Intrinsic.MEM_RESP:
             return Bits(self.args[0].width)
-        # for other intrinsics, do nothing.
-       
-        
-
-
+        return Bits(1)
 
     def __repr__(self):
         args = {", ".join(i.as_operand() for i in self.args[0:])}
@@ -107,13 +104,12 @@ def barrier(node):
 
 @ir_builder
 def has_mem_resp(memory):
+    '''Check if there is a memory response.'''
     return Intrinsic(Intrinsic.HAS_MEM_RESP, memory)
 
 @ir_builder
 def mem_write(payload, addr, wdata):
     '''Memory write operation.'''
-    #pylint: disable=import-outside-toplevel
-    # print(f"mem_write: {payload}, {addr}, {wdata}")
     return Intrinsic(Intrinsic.MEM_WRITE, payload, addr, wdata)
 
 @ir_builder

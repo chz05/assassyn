@@ -71,8 +71,6 @@ class Expr(Value):
             wrapped = i
             if isinstance(i, (Array, Port)):
                 i.users.append(self)
-            # elif isinstance(i, Bind):
-            #     wrapped = Operand(i, self)
             elif isinstance(i, Expr):
                 if isinstance(i, Bind):
                     wrapped = Operand(i, self)
@@ -81,9 +79,9 @@ class Expr(Value):
                     current_module = Singleton.builder.current_module
                     expr_module = i.parent.module if i.parent else None
                     if not isinstance(current_module, Downstream):
-                        # If we're in a regular Module (not Downstream), the expression must be from the same module
                         assert current_module == expr_module, \
-                            f'Expression {i} is from module {expr_module}, but current module is {current_module}'
+                            f'Expression {i} is from module {expr_module}, 
+                            but current module is {current_module}'
                 wrapped = Operand(i, self)
                 i.users.append(wrapped)
             elif isinstance(i, (Const, str, RecordValue)):

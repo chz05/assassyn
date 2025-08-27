@@ -25,9 +25,7 @@ class DRAM(Module): # pylint: disable=too-many-instance-attributes
     bound: Bind  # Bind handle
 
     def __init__(self, width, depth, init_file):
-        super().__init__(
-            ports={},
-        )  
+        super().__init__(ports={})
         self.width = width
         self.depth = depth
         self.init_file = init_file
@@ -81,18 +79,11 @@ class DRAM_handler(Downstream):
         succ = send_write_request(self.addr, self.we)
 
         kind_we = self.we
-            
         with Condition(succ):
             mem_write(self.payload, self.addr, self.wdata)
-
         with Condition(self.re):
             send_read_request(self.addr)
-        
-        # if the request is not success, what we do for it. Do nothing now, we can change later.
         has_resp = has_mem_resp(self)
-        # do nothing, but we need this one for callback.
-        # mem_rdata = mem_resp(self)
-        # rdata = has_resp.select(mem_rdata, Bits(self.width)(0))
         x = use_dram(self.handle_response.mem)
         x.fifo = self.handle_response.mem
         x.val = self.handle_response.mem
@@ -102,7 +93,6 @@ class DRAM_handler(Downstream):
         with Condition(self.we | has_resp):
             self.bound.bind(kind_we = kind_we, 
                             kind_re = kind_re, 
-                            write_success = succ
-                                              )
+                            write_success = succ)
         return self.bound
         
