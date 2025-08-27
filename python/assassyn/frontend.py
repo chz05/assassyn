@@ -4,7 +4,7 @@
 from .ir.array import RegArray, Array
 from .ir.dtype import DType, Int, UInt, Float, Bits, Record
 from .builder import SysBuilder, ir_builder, Singleton
-from .ir.expr import Expr, log, concat, finish, wait_until, assume, barrier, mem_write, send_read_request, send_write_request, has_mem_resp, mem_resp
+from .ir.expr import Expr, log, concat, finish, wait_until, assume, barrier, mem_write, send_read_request, send_write_request, has_mem_resp, mem_resp, use_dram
 from .ir.module import Module, Port, Downstream, fsm
 from .ir.module.sram import SRAM
 from .ir.module.dram import DRAM

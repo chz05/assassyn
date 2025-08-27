@@ -1,13 +1,17 @@
 '''Memory module, a special and subclass of Module.'''
 
-from .module import Module, combinational
+from .downstream import Downstream
+from .downstream import combinational as downstream_combinational
+from .module import Module, Port
+from .module import combinational as module_combinational
 from ..array import RegArray, Array
 from ..block import Condition
 from ..dtype import Bits
 from ..expr import Bind
 from ..value import Value
-from ..expr import mem_write, send_read_request, has_mem_resp, mem_resp, wait_until, send_write_request
+from ..expr import mem_write, send_read_request, has_mem_resp, mem_resp, wait_until, send_write_request, use_dram
 from ..expr import log
+from ..dtype import Int
 
 class DRAM(Module): # pylint: disable=too-many-instance-attributes
     '''The DRAM module.'''
@@ -36,7 +40,7 @@ class DRAM(Module): # pylint: disable=too-many-instance-attributes
         self.wdata = None
         self.bound = None
 
-    @combinational
+    @module_combinational
     def build(self, we, re, addr, wdata, handle_response): #pylint: disable=too-many-arguments
         '''The constructor for the DRAM module.
 
@@ -51,10 +55,10 @@ class DRAM(Module): # pylint: disable=too-many-instance-attributes
         # Returns
         bound: Bind: The bound handle of the user module.
         '''
-        self.we = we
-        self.re = re
-        self.addr = addr
-        self.wdata = wdata
+        # self.we = we
+        # self.re = re
+        # self.addr = addr
+        # self.wdata = wdata
 
         # with Condition(we):
         #     mem_write(self.payload, addr, wdata)
@@ -62,36 +66,88 @@ class DRAM(Module): # pylint: disable=too-many-instance-attributes
         #     mem_read(self.payload, addr)
         #     self.bound = user.bind(rdata=self.payload[addr])
         # wait_until(self.we | has_mem_resp(self))
-        kind_we = Bits(1)(0)
-        kind_re = Bits(1)(0)
-        write_success = Bits(1)(0)
-        rdata = Bits(self.width)(0)
-        succ = send_write_request(addr, self.we)
+        # kind_we = Bits(1)(0)
+        # kind_re = Bits(1)(0)
+        # write_success = Bits(1)(0)
+        # rdata = Bits(self.width)(0)
+        # succ = send_write_request(addr, self.we)
 
-        kind_we = self.we
+        # kind_we = self.we
             
-        with Condition(succ):
-            mem_write(self.payload, addr, wdata)
+        # with Condition(succ):
+        #     mem_write(self.payload, addr, wdata)
 
-        with Condition(self.re):
-            send_read_request(addr)
+        # with Condition(self.re):
+        #     send_read_request(addr)
         
-        # if the request is not success, what we do for it. Do nothing now, we can change later.
-        log('1111111111')
-        has_resp = has_mem_resp(self)
-        log('2222222222')
-        mem_rdata = mem_resp(self)
-        rdata = has_resp.select(mem_rdata, Bits(self.width)(0))
-        log('3333333333')
-        kind_re = has_resp.select(Bits(1)(1), Bits(1)(0))
+        # # if the request is not success, what we do for it. Do nothing now, we can change later.
+        # log('1111111111')
+        # has_resp = has_mem_resp(self)
+        # log('2222222222')
+        # mem_rdata = mem_resp(self)
+        # rdata = has_resp.select(mem_rdata, Bits(self.width)(0))
+        # log('3333333333')
+        # kind_re = has_resp.select(Bits(1)(1), Bits(1)(0))
 
-        with Condition(self.we | has_resp):
-            self.bound = handle_response.bind(kind_we = kind_we, 
-                                              kind_re = kind_re, 
-                                              write_success = write_success,
-                                              data = rdata)
+        # with Condition(self.we | has_resp):
+        #     self.bound = handle_response.bind(kind_we = kind_we, 
+        #                                       kind_re = kind_re, 
+        #                                       write_success = write_success,
+        #                                       data = rdata)
 
+        # return self.bound
+        dram_handler = DRAM_handler(self.width, we, re, self.payload, addr, wdata, handle_response)
+        self.bound = dram_handler.build()
         return self.bound
 
     def __repr__(self):
         return f'DRAM(width={self.width}, depth={self.depth}, init_file={self.init_file})'
+
+class DRAM_handler(Downstream):
+    '''The handler for the DRAM module.'''
+
+    def __init__(self, width, we, re, payload, addr, wdata, handle_response):
+        super().__init__()
+        self.width = width
+        self.we = we
+        self.re = re
+        self.payload = payload
+        self.addr = addr
+        self.wdata = wdata
+        self.handle_response = handle_response
+        self.bound = None
+
+    @downstream_combinational
+    def build(self):
+        kind_we = Bits(1)(0)
+        kind_re = Bits(1)(0)
+        write_success = Bits(1)(0)
+        rdata = Bits(self.width)(0)
+        succ = send_write_request(self.addr, self.we)
+
+        kind_we = self.we
+            
+        with Condition(succ):
+            mem_write(self.payload, self.addr, self.wdata)
+
+        with Condition(self.re):
+            send_read_request(self.addr)
+        
+        # if the request is not success, what we do for it. Do nothing now, we can change later.
+        has_resp = has_mem_resp(self)
+        # do nothing, but we need this one for callback.
+        # mem_rdata = mem_resp(self)
+        # rdata = has_resp.select(mem_rdata, Bits(self.width)(0))
+        x = use_dram(self.handle_response.mem)
+        x.fifo = self.handle_response.mem
+        x.val = self.handle_response.mem
+        self.bound = self.handle_response.bind()
+        self.bound.pushes.append(x)
+        kind_re = has_resp.select(Bits(1)(1), Bits(1)(0))
+        with Condition(self.we | has_resp):
+            self.bound.bind(kind_we = kind_we, 
+                            kind_re = kind_re, 
+                            write_success = succ
+                                              )
+        return self.bound
+        

@@ -15,6 +15,7 @@ INTRIN_INFO = {
     906: ('send_read_request', 1, False, True),
     907: ('mem_resp', 1, True, False),
     908: ('send_write_request', 2, False, True),
+    909: ('use_dram', 1, False, True),
 }
 
 class Intrinsic(Expr):
@@ -29,6 +30,7 @@ class Intrinsic(Expr):
     SEND_READ_REQUEST = 906
     MEM_RESP = 907
     SEND_WRITE_REQUEST = 908
+    USE_DRAM = 909
 
     opcode: int  # Operation code for this intrinsic
 
@@ -128,3 +130,8 @@ def send_write_request(addr, we):
 def mem_resp(memory):
     '''Get the memory response.'''
     return Intrinsic(Intrinsic.MEM_RESP, memory)
+
+@ir_builder
+def use_dram(dram):
+    '''Use a DRAM module.'''
+    return Intrinsic(Intrinsic.USE_DRAM, dram)
