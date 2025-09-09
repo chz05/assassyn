@@ -322,7 +322,7 @@ assert!(cond.count_ones() == 1, \"Select1Hot: condition is not 1-hot\");''']
                 we = node.args[1]
                 idx_val = dump_rval_ref(self.module_ctx, self.sys, idx)
                 we_val = dump_rval_ref(self.module_ctx, self.sys, we)
-                val = dump_rval_ref(self.module_ctx, self.sys, node) 
+                val = dump_rval_ref(self.module_ctx, self.sys, node)
                 code.append(f"""
                     let {val} = unsafe {{
                         if {we_val} {{
@@ -340,7 +340,7 @@ assert!(cond.count_ones() == 1, \"Select1Hot: condition is not 1-hot\");''']
                 self.modules_for_callback["MemUser_rdata"] = fifo_id
 
             elif intrinsic == Intrinsic.HAS_MEM_RESP:
-                val = dump_rval_ref(self.module_ctx, self.sys, node) 
+                val = dump_rval_ref(self.module_ctx, self.sys, node)
                 if not self.modules_for_callback.get("MemUser_rdata"):
                     code.append(f"let {val} = false")
                 else:

@@ -1,19 +1,20 @@
 '''Memory module, a special and subclass of Module.'''
 
 from .downstream import Downstream
+from .memorybase import MemoryBase
 from .downstream import combinational as downstream_combinational
 from .module import Module
 from .module import combinational as module_combinational
-from ..array import RegArray, Array
+from ..array import Array
 from ..block import Condition
 from ..dtype import Bits
 from ..expr import Bind
 from ..value import Value
 from ..expr import mem_write, send_read_request, has_mem_resp, send_write_request, use_dram
 
-class DRAM(Module): # pylint: disable=too-many-instance-attributes
+class DRAM(Module): # pylint: disable=too-many-instance-attributes, duplicate-code
     '''The DRAM module.'''
-
+    
     width: int  # Width of the memory in bits
     depth: int  # Depth of the memory in words
     init_file: str  # Path to initialization file
@@ -26,14 +27,7 @@ class DRAM(Module): # pylint: disable=too-many-instance-attributes
 
     def __init__(self, width, depth, init_file):
         super().__init__(ports={})
-        self.width = width
-        self.depth = depth
-        self.init_file = init_file
-        self.payload = RegArray(Bits(width), depth, attr=[self])
-        self.we = None
-        self.re = None
-        self.addr = None
-        self.wdata = None
+        MemoryBase.__init__(self, width, depth, init_file)
         self.bound = None
 
     @module_combinational
@@ -46,43 +40,45 @@ class DRAM(Module): # pylint: disable=too-many-instance-attributes
         re: Value: The read enable signal.
         addr: Value: The address signal.
         wdata: Value: The write data signal.
-        user: Module: The user module, it is required to have a rdata port.
+        handle_response: another module
 
         # Returns
         bound: Bind: The bound handle of the user module.
         '''
-        dram_handler = DRAM_handler(self.width, we, re, self.payload, addr, wdata, handle_response)
-        self.bound = dram_handler.build()
+        dram_handler = DramHandler(self.width, handle_response, we, re)
+        self.bound = dram_handler.build(self.payload, addr, wdata)
         return self.bound
 
     def __repr__(self):
         return f'DRAM(width={self.width}, depth={self.depth}, init_file={self.init_file})'
 
-class DRAM_handler(Downstream):
-    '''The handler for the DRAM module.'''
+class DramHandler(Downstream):
+    """"Dram handler class"""        
 
-    def __init__(self, width, we, re, payload, addr, wdata, handle_response):
+    def __init__(self, width, handle_response, we, re):
         super().__init__()
-        self.width = width
         self.we = we
         self.re = re
-        self.payload = payload
-        self.addr = addr
-        self.wdata = wdata
+        self.width = width
         self.handle_response = handle_response
         self.bound = None
 
     @downstream_combinational
-    def build(self):
-        kind_we = Bits(1)(0)
-        kind_re = Bits(1)(0)
-        succ = send_write_request(self.addr, self.we)
+    def build(self, payload, addr, wdata):
+        """Build the DRAM handler configuration.
+        
+        Returns:
+            bound: The bound handle
+        """
+        # kind_we = Bits(1)(0)
+        # kind_re = Bits(1)(0)
+        succ = send_write_request(addr, self.we)
 
         kind_we = self.we
         with Condition(succ):
-            mem_write(self.payload, self.addr, self.wdata)
+            mem_write(payload, addr, wdata)
         with Condition(self.re):
-            send_read_request(self.addr)
+            send_read_request(addr)
         has_resp = has_mem_resp(self)
         x = use_dram(self.handle_response.mem)
         x.fifo = self.handle_response.mem
@@ -91,8 +87,7 @@ class DRAM_handler(Downstream):
         self.bound.pushes.append(x)
         kind_re = has_resp.select(Bits(1)(1), Bits(1)(0))
         with Condition(self.we | has_resp):
-            self.bound.bind(kind_we = kind_we, 
-                            kind_re = kind_re, 
+            self.bound.bind(kind_we = kind_we,
+                            kind_re = kind_re,
                             write_success = succ)
         return self.bound
-        

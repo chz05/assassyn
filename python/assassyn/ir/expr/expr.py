@@ -80,7 +80,7 @@ class Expr(Value):
                     expr_module = i.parent.module if i.parent else None
                     if not isinstance(current_module, Downstream):
                         assert current_module == expr_module, \
-                            f'Expression {i} is from module {expr_module}, 
+                            f'Expression {i} is from module {expr_module}, \
                             but current module is {current_module}'
                 wrapped = Operand(i, self)
                 i.users.append(wrapped)

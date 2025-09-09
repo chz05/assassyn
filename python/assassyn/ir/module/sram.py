@@ -6,12 +6,13 @@ from ..block import Condition
 from ..dtype import Bits
 from ..expr import Bind
 from ..value import Value
+from .memorybase import MemoryBase
 
 
-class SRAM(Downstream): # pylint: disable=too-many-instance-attributes
+class SRAM(Downstream): # pylint: disable=too-many-instance-attributes, duplicate-code
     '''The SRAM module, a subclass of Downstream.'''
-
-    width: int  # Width of the memory in bits
+    #pylint: disable=duplicate-code
+    width: int 
     depth: int  # Depth of the memory in words
     init_file: str  # Path to initialization file
     payload: Array  # Array holding the memory contents
@@ -23,18 +24,11 @@ class SRAM(Downstream): # pylint: disable=too-many-instance-attributes
 
     def __init__(self, width, depth, init_file):
         super().__init__()
-        self.width = width
-        self.depth = depth
-        self.init_file = init_file
-        self.payload = RegArray(Bits(width), depth, attr=[self])
-        self.we = None
-        self.re = None
-        self.addr = None
-        self.wdata = None
+        MemoryBase.__init__(self, width, depth, init_file)
         self.bound = None
 
     @combinational
-    def build(self, we, re, addr, wdata, user): #pylint: disable=too-many-arguments
+    def build(self, we, re, addr, wdata, user): #pylint: disable=too-many-arguments #pylint: disable=duplicate-code
         '''The constructor for the SRAM module.
 
         # Arguments

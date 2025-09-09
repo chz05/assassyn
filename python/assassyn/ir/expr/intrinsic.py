@@ -46,9 +46,10 @@ class Intrinsic(Expr):
         return self._operands
     @property
     def dtype(self):
-        from ..dtype import Bits
         '''Get the data type of this intrinsic.'''
-        if self.opcode in [Intrinsic.HAS_MEM_RESP, Intrinsic.SEND_READ_REQUEST, 
+        #pylint: disable=import-outside-toplevel
+        from ..dtype import Bits
+        if self.opcode in [Intrinsic.HAS_MEM_RESP, Intrinsic.SEND_READ_REQUEST,
         Intrinsic.SEND_WRITE_REQUEST]:
             return Bits(1)
         if self.opcode == Intrinsic.MEM_RESP:
