@@ -27,7 +27,7 @@ class SRAM(Downstream): # pylint: disable=too-many-instance-attributes, duplicat
         self.bound = None
 
     @combinational
-    def build(self, we, re, addr, wdata, user): #pylint: disable=too-many-arguments #pylint: disable=duplicate-code
+    def build(self, we, re, addr, wdata, user): #pylint: disable=too-many-arguments, duplicate-code
         '''The constructor for the SRAM module.
         # Arguments
         init_file: str: The file to initialize the memory.
