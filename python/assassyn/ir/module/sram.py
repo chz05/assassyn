@@ -1,9 +1,8 @@
 '''Memory module, a special and subclass of Module.'''
 
 from .downstream import Downstream, combinational
-from ..array import RegArray, Array
+from ..array import Array
 from ..block import Condition
-from ..dtype import Bits
 from ..expr import Bind
 from ..value import Value
 from .memorybase import MemoryBase
@@ -12,7 +11,7 @@ from .memorybase import MemoryBase
 class SRAM(Downstream): # pylint: disable=too-many-instance-attributes, duplicate-code
     '''The SRAM module, a subclass of Downstream.'''
     #pylint: disable=duplicate-code
-    width: int 
+    width: int
     depth: int  # Depth of the memory in words
     init_file: str  # Path to initialization file
     payload: Array  # Array holding the memory contents
@@ -30,7 +29,6 @@ class SRAM(Downstream): # pylint: disable=too-many-instance-attributes, duplicat
     @combinational
     def build(self, we, re, addr, wdata, user): #pylint: disable=too-many-arguments #pylint: disable=duplicate-code
         '''The constructor for the SRAM module.
-
         # Arguments
         init_file: str: The file to initialize the memory.
         we: Value: The write enable signal.
