@@ -369,11 +369,11 @@ fn main() {{
     // Verify library files exist
     assert!(
         Path::new(&format!("{{}}/libwrapper{dynamiclib_suffix()}", wrapper_path)).exists(),
-        format!("libwrapper{dynamiclib_suffix()} not found")
+        "libwrapper{dynamiclib_suffix()} not found"
     );
     assert!(
         Path::new(&format!("{{}}/libramulator{dynamiclib_suffix()}", ramulator_path)).exists(),
-        format!("libramulator{dynamiclib_suffix()} not found")
+        "libramulator{dynamiclib_suffix()} not found"
     );
 
     // Set library search paths
@@ -391,7 +391,7 @@ fn main() {{
     println!("cargo:rustc-link-arg=-Wl,-rpath,{{}}", wrapper_path);
 
     // Set DT_RUNPATH instead of DT_RPATH
-    println!("cargo:rustc-link-arg=-Wl,--enable-new-dtags");
+    // println!("cargo:rustc-link-arg=-Wl,--enable-new-dtags");
 
     // Link against libraries
     println!("cargo:rustc-link-lib=ramulator");
