@@ -21,7 +21,7 @@ REPO_PATH=`git rev-parse --show-toplevel`
 which sccache > /dev/null 2>&1
 
 if [ $? -eq 0 ]; then
-  echo "Setting up SCCACHE to $SCCACHE"
+  echo "Setting up SCCACHE to `which sccache`"
   export RUSTC_WRAPPER=`which sccache`
 else
   echo "No sccache found! Skip!"
@@ -33,9 +33,9 @@ export PYTHONPATH=$REPO_PATH/python:$PYTHONPATH
 echo "Setting ASSASSYN_HOME to $REPO_PATH"
 export ASSASSYN_HOME=$REPO_PATH
 
-if [ -d "$REPO_PATH/3rd-party/circt/build/tools/circt/python_packages/pycde" ]; then
+if [ -d "$REPO_PATH/3rd-party/circt/frontends/PyCDE/dist/lib" ]; then
   echo "Adding PyCDE to PYTHONPATH."
-  export PYTHONPATH="$REPO_PATH/3rd-party/circt/build/tools/circt/python_packages/pycde:$PYTHONPATH"
+  export PYTHONPATH="$REPO_PATH/3rd-party/circt/frontends/PyCDE/dist/lib:$PYTHONPATH"
 fi
 
 if [ "$NO_VERILATOR" = false ]; then
