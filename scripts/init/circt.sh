@@ -11,7 +11,7 @@ if [ $? -eq 0 ]; then
     return 0
   else
     echo "WARNING: PyCDE installed via pip but import test failed."
-    exit 1
+    return 1
   fi
 fi
 

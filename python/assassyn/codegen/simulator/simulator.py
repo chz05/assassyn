@@ -50,7 +50,7 @@ def dump_simulator( #pylint: disable=too-many-locals, too-many-branches, too-man
     fd.write("use super::ramulator::*;\n")
     os = platform.system().lower()
     if os == 'darwin':
-        fd.write("libloading::os::unix::{Library, Symbol};\n")
+        fd.write("use libloading::os::unix::{Library, Symbol, RTLD_LAZY, RTLD_GLOBAL};\n")
     else:
         fd.write("use libloading::Library;\n")
     fd.write("use std::sync::Arc;\n")
@@ -64,7 +64,7 @@ def dump_simulator( #pylint: disable=too-many-locals, too-many-branches, too-man
 
     # Begin simulator struct definition
     fd.write("pub struct Simulator { pub stamp: usize, ")
-    fd.write("pub mem_interface: Arc<MemoryInterface<'static>>,\n")
+    fd.write("pub mem_interface: MemoryInterface,\n")
     home = repo_path()
     # Add array fields to simulator struct
     for array in sys.arrays:
@@ -131,10 +131,11 @@ def dump_simulator( #pylint: disable=too-many-locals, too-many-branches, too-man
     # Constructor
     fd.write("  pub fn new() -> Self {\n")
     fd.write("let mem = unsafe {")
+    midfix = '/testbench/simulator/build/lib/libwrapper'
     if os == 'darwin':
-        fd.write(f'let lib = Library::open(Some("{home}/testbench/simulator/build/lib/libwrapper{dynamiclib_suffix()}"), RTLD_GLOBAL | RTLD_LAZY).unwrap()')
+        fd.write(f'let lib = Library::open(Some("{home}{midfix}{dynamiclib_suffix()}"), RTLD_GLOBAL | RTLD_LAZY).unwrap();')
     else:
-        fd.write(f'let lib = Library::open("{home}/testbench/simulator/build/lib/libwrapper{dynamiclib_suffix()}").unwrap()')
+        fd.write(f'let lib = Library::open("{home}{midfix}{dynamiclib_suffix()}").unwrap();')
     fd.write('MemoryInterface::new(lib).expect("Failed to create MemoryInterface") };')
     fd.write("    Simulator {\n")
     fd.write("      stamp: 0,\n")
