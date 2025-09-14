@@ -9,7 +9,7 @@ import typing
 from pathlib import Path
 from .modules import ElaborateModule
 from .simulator import dump_simulator, dump_main, dump_build
-from .runtime import dump_runtime
+from .runtime import dump_runtime, dump_ramulator
 
 if typing.TYPE_CHECKING:
     from ...builder import SysBuilder
@@ -116,6 +116,10 @@ def elaborate_impl(sys, config):
     # Generate runtime.rs
     with open(simulator_path / "src/runtime.rs", 'w', encoding='utf-8') as fd:
         dump_runtime(fd)
+
+    # Generate memory.rs
+    with open(simulator_path / "src/ramulator.rs", 'w', encoding='utf-8') as fd:
+        dump_ramulator(fd)
 
     # Generate simulator.rs
     with open(simulator_path / "src/simulator.rs", 'w', encoding='utf-8') as fd:
