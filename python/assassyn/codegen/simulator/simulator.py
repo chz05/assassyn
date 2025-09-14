@@ -47,6 +47,7 @@ def dump_simulator( #pylint: disable=too-many-locals, too-many-branches, too-man
     # Write imports
     fd.write("use std::collections::VecDeque;\n")
     fd.write("use super::runtime::*;\n")
+    fd.write("use super::ramulator::*;\n")
     fd.write("use libloading::Library;\n")
     fd.write("use std::sync::Arc;\n")
     fd.write("use num_bigint::{BigInt, BigUint};\n")
@@ -345,6 +346,7 @@ def dump_main(fd):
 mod runtime;
 mod modules;
 mod simulator;
+mod ramulator;
 
 fn main() {
   simulator::simulate();
