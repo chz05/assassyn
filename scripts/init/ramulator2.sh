@@ -42,9 +42,6 @@ if [ $? -ne 0 ]; then
   return 1
 fi
 
-cp ./ramulator2 ../ramulator2
-cd ..
-
 echo "Ramulator2 build completed."
 cd "$RESTORE"
 return 0

@@ -3,6 +3,7 @@
 from __future__ import annotations
 
 import os
+import platform
 from ...analysis import topo_downstream_modules, get_upstreams
 from .utils import dtype_to_rust_type, int_imm_dumper_impl, fifo_name
 from ...builder import SysBuilder
@@ -10,6 +11,21 @@ from ...ir.block import CycledBlock
 from ...ir.expr import Expr
 from ...ir.module import Downstream, Module, SRAM
 from ...utils import namify, repo_path
+
+
+def dynamiclib_suffix():
+    """Return the dynamic library suffix for the current platform.
+    
+    Returns:
+        str: The dynamic library suffix (.dll for Windows, .dylib for macOS, .so for Linux)
+    """
+    system = platform.system().lower()
+    if system == "windows":
+        return ".dll"
+    elif system == "darwin":
+        return ".dylib"
+    else:  # Linux and other Unix-like systems
+        return ".so"
 
 
 def dump_simulator( #pylint: disable=too-many-locals, too-many-branches, too-many-statements
@@ -115,7 +131,7 @@ def dump_simulator( #pylint: disable=too-many-locals, too-many-branches, too-man
     fd.write("  pub fn new() -> Self {\n")
     fd.write(f"""
     let lib = Arc::new(
-        unsafe {{ Library::new("{home}/testbench/simulator/build/lib/libwrapper.so") }}
+        unsafe {{ Library::new("{home}/testbench/simulator/build/lib/libwrapper{dynamiclib_suffix()}") }}
             .expect("Failed to load library"),
     );
     let lib_ref = lib.clone();
@@ -350,12 +366,12 @@ fn main() {{
 
     // Verify library files exist
     assert!(
-        Path::new(&format!("{{}}/libwrapper.so", wrapper_path)).exists(),
-        "libwrapper.so not found"
+        Path::new(&format!("{{}}/libwrapper{dynamiclib_suffix()}", wrapper_path)).exists(),
+        format!("libwrapper{dynamiclib_suffix()} not found")
     );
     assert!(
-        Path::new(&format!("{{}}/libramulator.so", ramulator_path)).exists(),
-        "libramulator.so not found"
+        Path::new(&format!("{{}}/libramulator{dynamiclib_suffix()}", ramulator_path)).exists(),
+        format!("libramulator{dynamiclib_suffix()} not found")
     );
 
     // Set library search paths
