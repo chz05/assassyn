@@ -23,7 +23,7 @@ make -j
 
 if [ $? -ne 0 ]; then
   echo "Failed to configure Verilator build. Please check the configuration."
-  exit 1
+  return 1
 fi
 
 cd $RESTORE

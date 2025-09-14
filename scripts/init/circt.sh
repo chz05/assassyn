@@ -31,7 +31,7 @@ DIST_DIR="`pwd`"/dist
 if [ $? -ne 0 ]; then
   echo "Failed to build PyCDE from source. Please check the build output."
   cd $RESTORE
-  exit 1
+  return 1
 fi
 
 # Install the built package to local directory
@@ -40,7 +40,7 @@ python setup.py install
 if [ $? -ne 0 ]; then
   echo "Failed to install PyCDE. Please check the installation output."
   cd $RESTORE
-  exit 1
+  return 1
 fi
 
   
@@ -51,7 +51,7 @@ if [ $? -eq 0 ]; then
 else
   echo "WARNING: PyCDE built and installed but import test failed."
   cd $RESTORE
-  exit 1
+  return 1
 fi
 
 cd $RESTORE
