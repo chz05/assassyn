@@ -19,10 +19,10 @@ def dynamiclib_suffix():
     Returns:
         str: The dynamic library suffix (.dll for Windows, .dylib for macOS, .so for Linux)
     """
-    system = platform.system().lower()
-    if system == "windows":
+    os = platform.system().lower()
+    if os == "windows":
         return ".dll"
-    if system == "darwin":
+    if os == "darwin":
         return ".dylib"
     # Linux and other Unix-like systems
     return ".so"
@@ -48,7 +48,11 @@ def dump_simulator( #pylint: disable=too-many-locals, too-many-branches, too-man
     fd.write("use std::collections::VecDeque;\n")
     fd.write("use super::runtime::*;\n")
     fd.write("use super::ramulator::*;\n")
-    fd.write("use libloading::Library;\n")
+    os = platform.system().lower()
+    if os == 'darwin':
+        fd.write("libloading::os::unix::{Library, Symbol};\n")
+    else:
+        fd.write("use libloading::Library;\n")
     fd.write("use std::sync::Arc;\n")
     fd.write("use num_bigint::{BigInt, BigUint};\n")
     fd.write("use rand::seq::SliceRandom;\n\n")
@@ -61,7 +65,6 @@ def dump_simulator( #pylint: disable=too-many-locals, too-many-branches, too-man
     # Begin simulator struct definition
     fd.write("pub struct Simulator { pub stamp: usize, ")
     fd.write("pub mem_interface: Arc<MemoryInterface<'static>>,\n")
-    fd.write("_lib: Arc<Library>,\n")
     home = repo_path()
     # Add array fields to simulator struct
     for array in sys.arrays:
@@ -127,25 +130,17 @@ def dump_simulator( #pylint: disable=too-many-locals, too-many-branches, too-man
 
     # Constructor
     fd.write("  pub fn new() -> Self {\n")
-    fd.write(f"""
-    let lib = Arc::new(
-        unsafe {{ Library::new("{home}/testbench/simulator/build/lib/libwrapper{dynamiclib_suffix()}") }}
-            .expect("Failed to load library"),
-    );
-    let lib_ref = lib.clone();
-
-    let mem = unsafe {{
-        let lib_static = Box::leak(Box::new(lib.clone()));
-
-        Arc::new(MemoryInterface::new(&*lib_static).expect("Failed to create MemoryInterface"))
-    }};
-    """)
+    fd.write("let mem = unsafe {")
+    if os == 'darwin':
+        fd.write(f'let lib = Library::open(Some("{home}/testbench/simulator/build/lib/libwrapper{dynamiclib_suffix()}"), RTLD_GLOBAL | RTLD_LAZY).unwrap()')
+    else:
+        fd.write(f'let lib = Library::open("{home}/testbench/simulator/build/lib/libwrapper{dynamiclib_suffix()}").unwrap()')
+    fd.write('MemoryInterface::new(lib).expect("Failed to create MemoryInterface") };')
     fd.write("    Simulator {\n")
     fd.write("      stamp: 0,\n")
     for init in simulator_init:
         fd.write(f"      {init}\n")
     fd.write("      mem_interface: mem,\n")
-    fd.write("      _lib: lib,\n")
     fd.write("    }\n")
     fd.write("  }\n\n")
 

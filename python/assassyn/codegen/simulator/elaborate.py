@@ -129,10 +129,6 @@ def elaborate_impl(sys, config):
     with open(simulator_path / "src/main.rs", 'w', encoding='utf-8') as fd:
         dump_main(fd)
 
-    # Generate main.rs
-    with open(simulator_path / "build.rs", 'w', encoding='utf-8') as fd:
-        dump_build(fd)
-
     return manifest_path
 
 
