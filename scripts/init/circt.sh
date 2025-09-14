@@ -4,7 +4,15 @@
 pip install --user pycde --break-system-packages
 if [ $? -eq 0 ]; then
   echo "CIRCT installed successfully via pip."
-  return 0
+  # Verify that PyCDE can be imported
+  python3 -c "import pycde; print('PyCDE import verification: SUCCESS')"
+  if [ $? -eq 0 ]; then
+    echo "PyCDE import test passed."
+    return 0
+  else
+    echo "WARNING: PyCDE installed via pip but import test failed."
+    exit 1
+  fi
 fi
 
 RESTORE=`pwd`
@@ -23,28 +31,27 @@ DIST_DIR="`pwd`"/dist
 if [ $? -ne 0 ]; then
   echo "Failed to build PyCDE from source. Please check the build output."
   cd $RESTORE
-  return 1
+  exit 1
 fi
 
 # Install the built package to local directory
-python setup.py install --prefix="$DIST_DIR"
+python setup.py install
 
 if [ $? -ne 0 ]; then
   echo "Failed to install PyCDE. Please check the installation output."
   cd $RESTORE
-  return 1
+  exit 1
 fi
 
-# Add the local installation to PYTHONPATH
-# Find the actual Python site-packages directory
-SITE_PACKAGES=$(find "$DIST_DIR/lib" -name "site-packages" -type d 2>/dev/null | head -n 1)
-
-if [ -n "$SITE_PACKAGES" ]; then
-  if [ -z "$PYTHONPATH" ]; then
-    export PYTHONPATH="$SITE_PACKAGES"
-  else
-    export PYTHONPATH="$SITE_PACKAGES:$PYTHONPATH"
-  fi
+  
+# Verify that PyCDE can be imported
+python3 -c "import pycde; print('PyCDE import verification: SUCCESS')"
+if [ $? -eq 0 ]; then
+  echo "PyCDE import test passed."
+else
+  echo "WARNING: PyCDE built and installed but import test failed."
+  cd $RESTORE
+  exit 1
 fi
 
 cd $RESTORE
