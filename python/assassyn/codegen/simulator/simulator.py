@@ -22,10 +22,10 @@ def dynamiclib_suffix():
     system = platform.system().lower()
     if system == "windows":
         return ".dll"
-    elif system == "darwin":
+    if system == "darwin":
         return ".dylib"
-    else:  # Linux and other Unix-like systems
-        return ".so"
+    # Linux and other Unix-like systems
+    return ".so"
 
 
 def dump_simulator( #pylint: disable=too-many-locals, too-many-branches, too-many-statements
