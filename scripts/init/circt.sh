@@ -21,7 +21,9 @@ echo "Failed to install CIRCT via pip. Fall back to building from source using P
 cd $ASSASSYN_HOME/3rd-party/circt/frontends/PyCDE
 
 # Install the built package to local directory
-pip install .
+
+CIRCT_DIRECTORY="`pwd`/../../" CIRCT_EXTRA_CMAKE_ARGS="-DESI_RUNTIME=OFF -DZ3_DISABLE=ON -DOR_TOOLS_DISABLE=ON" python -m build
+pip install ./dist/*.whl
 
 if [ $? -ne 0 ]; then
   echo "Failed to install PyCDE. Please check the installation output."
