@@ -6,4 +6,5 @@ if [ $? -ne 0 ]; then
   exit 1
 else
   echo "Python dependencies installed successfully."
+  return 0
 fi

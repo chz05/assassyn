@@ -1,26 +1,5 @@
 # Install PyCDE
 
-# Default values
-LLVM_PARALLEL_COMPILE_JOBS=16
-LLVM_PARALLEL_TABLEGEN_JOBS=16
-LLVM_PARALLEL_LINK_JOBS=1
-
-# Parse arguments
-for arg in "$@"; do
-  case $arg in
-    --llvm-compile-jobs=*)
-      LLVM_PARALLEL_COMPILE_JOBS="${arg#*=}"
-      ;;
-    --llvm-link-jobs=*)
-      LLVM_PARALLEL_LINK_JOBS="${arg#*=}"
-      ;;
-    --llvm-tbg-jobs=*)
-      LLVM_PARALLEL_TABLEGEN_JOBS="${arg#*=}"
-      ;;
-  esac
-
-done
-
 # TODO: Later add a flag to force CIRCT installation via source
 pip install --user pycde --break-system-packages
 if [ $? -eq 0 ]; then
@@ -30,39 +9,45 @@ fi
 
 RESTORE=`pwd`
 
-echo "Failed to install CIRCT via pip. Fall back to building from source."
-CURRENT_DIR_BEFORE_PYCDE_BUILD="$(pwd)"
-cd $ASSASSYN_HOME/3rd-party/circt
-mkdir -p build 
-cd build
-cmake \
-    -DCMAKE_BUILD_TYPE=Debug \
-    -DLLVM_ENABLE_PROJECTS=mlir \
-    -DLLVM_ENABLE_ASSERTIONS=ON \
-    -DLLVM_EXTERNAL_PROJECTS=circt \
-    -DLLVM_EXTERNAL_CIRCT_SOURCE_DIR=.. \
-    -DLLVM_TARGETS_TO_BUILD="host;RISCV" \
-    -DLLVM_PARALLEL_LINK_JOBS=${LLVM_PARALLEL_LINK_JOBS} \
-    -DLLVM_PARALLEL_COMPILE_JOBS=${LLVM_PARALLEL_COMPILE_JOBS} \
-    -DLLVM_PARALLEL_TABLEGEN_JOBS=${LLVM_PARALLEL_TABLEGEN_JOBS} \
-    -DMLIR_ENABLE_BINDINGS_PYTHON=ON \
-    -DCIRCT_BINDINGS_PYTHON_ENABLED=ON \
-    -DCIRCT_ENABLE_FRONTENDS=PyCDE \
-    -G Ninja ../llvm/llvm
+echo "Failed to install CIRCT via pip. Fall back to building from source using PyCDE setup."
+cd $ASSASSYN_HOME/3rd-party/circt/frontends/PyCDE
+
+# Create local installation directory
+mkdir -p "$DIST_DIR"
+
+# Use the PyCDE setup.py to build just the PyCDE frontend
+# Set ESI_RUNTIME=OFF to minimize external dependencies
+CIRCT_DIRECTORY="$ASSASSYN_HOME/3rd-party/circt" CIRCT_EXTRA_CMAKE_ARGS="-DESI_RUNTIME=OFF" python setup.py build
+DIST_DIR="`pwd`"/dist
 
 if [ $? -ne 0 ]; then
-  echo "Failed to configure CIRCT build. Please check the CMake configuration."
+  echo "Failed to build PyCDE from source. Please check the build output."
+  cd $RESTORE
   return 1
 fi
 
-ninja
+# Install the built package to local directory
+python setup.py install --prefix="$DIST_DIR"
 
 if [ $? -ne 0 ]; then
-  echo "Failed to build CIRCT. Please check the build output."
+  echo "Failed to install PyCDE. Please check the installation output."
+  cd $RESTORE
   return 1
+fi
+
+# Add the local installation to PYTHONPATH
+# Find the actual Python site-packages directory
+SITE_PACKAGES=$(find "$DIST_DIR/lib" -name "site-packages" -type d 2>/dev/null | head -n 1)
+
+if [ -n "$SITE_PACKAGES" ]; then
+  if [ -z "$PYTHONPATH" ]; then
+    export PYTHONPATH="$SITE_PACKAGES"
+  else
+    export PYTHONPATH="$SITE_PACKAGES:$PYTHONPATH"
+  fi
 fi
 
 cd $RESTORE
 
-echo "CIRCT built successfully."
+echo "PyCDE built and installed successfully to local directory."
 return 0
