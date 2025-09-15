@@ -1,6 +1,12 @@
 """Runtime code generation for Assassyn simulator."""
 
 def dump_ramulator(fd):
+    """
+    generate the ramulator module.
+
+    Args:
+      fd: File descriptor to write to
+    """
     # Add memory interface part
     fd.write("""
 use libloading::os::unix::{Library, Symbol};
