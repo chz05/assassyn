@@ -133,11 +133,11 @@ def dump_simulator( #pylint: disable=too-many-locals, too-many-branches, too-man
     fd.write("let mem = unsafe {")
     midfix = '/testbench/simulator/build/lib/libwrapper'
     if os == 'darwin':
-        fd.write(f'let lib = Library::open(Some("{home}{midfix}{dynamiclib_suffix()}"), \
+        fd.write(f'let lib = Library::new(Some("{home}{midfix}{dynamiclib_suffix()}"), \
         RTLD_GLOBAL | RTLD_LAZY).unwrap();')
     else:
-        fd.write(f'let lib = Library::open("{home}{midfix}{dynamiclib_suffix()}").unwrap();')
-    fd.write('MemoryInterface::new(lib).expect("Failed to create MemoryInterface") };')
+        fd.write(f'let lib = Library::new("{home}{midfix}{dynamiclib_suffix()}").unwrap();')
+    fd.write('MemoryInterface::new(lib.into()).expect("Failed to create MemoryInterface") };')
     fd.write("    Simulator {\n")
     fd.write("      stamp: 0,\n")
     for init in simulator_init:
