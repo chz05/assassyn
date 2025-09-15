@@ -19,10 +19,11 @@ def dynamiclib_suffix():
     Returns:
         str: The dynamic library suffix (.dll for Windows, .dylib for macOS, .so for Linux)
     """
-    operating_sys = platform.system().lower()
-    if operating_sys == "windows":
+
+    system = platform.system().lower()
+    if system == "windows":
         return ".dll"
-    if operating_sys == "darwin":
+    if system == "darwin":
         return ".dylib"
     # Linux and other Unix-like systems
     return ".so"

@@ -27,6 +27,7 @@ pip install ./dist/*.whl
 
 if [ $? -ne 0 ]; then
   echo "Failed to install PyCDE. Please check the installation output."
+
   cd $RESTORE
   return 1
 fi

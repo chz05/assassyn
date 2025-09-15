@@ -8,7 +8,9 @@ import subprocess
 import typing
 from pathlib import Path
 from .modules import ElaborateModule
+
 from .simulator import dump_simulator, dump_main
+
 from .runtime import dump_runtime, dump_ramulator
 
 if typing.TYPE_CHECKING:
