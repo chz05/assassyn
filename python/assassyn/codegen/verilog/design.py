@@ -1,4 +1,5 @@
 # pylint: disable=C0302
+# pylint: disable=no-member
 """Verilog design generation and code dumping."""
 
 from typing import List, Dict, Tuple
