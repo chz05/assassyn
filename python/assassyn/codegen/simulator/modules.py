@@ -196,7 +196,7 @@ class ElaborateModule(Visitor):
             fifo_id = fifo_name(fifo)
             value = dump_rval_ref(self.module_ctx, self.sys, node.val)
             module_writer = self.module_name
-            self.modules_for_callback["MemUser_rdata"] = fifo_id
+            # self.modules_for_callback["MemUser_rdata"] = fifo_id
             code.append(f"""{{
               let stamp = sim.stamp;
               sim.{fifo_id}.push.push(
@@ -307,8 +307,8 @@ assert!(cond.count_ones() == 1, \"Select1Hot: condition is not 1-hot\");''']
                 idx_val = dump_rval_ref(self.module_ctx, self.sys, idx)
                 code.append(f"""{{
                     unsafe {{
-                        let mem_interface = Arc::clone(&sim.mem_interface);
-                        let success = mem_interface.as_ref().send_request({idx_val} as i64, false, rust_callback, sim as *const _ as *mut _,);
+                        let mem_interface = &sim.mem_interface;
+                        let success = mem_interface.send_request({idx_val} as i64, false, rust_callback, sim as *const _ as *mut _,);
                         success
                     }}
                 }}""")
@@ -322,8 +322,8 @@ assert!(cond.count_ones() == 1, \"Select1Hot: condition is not 1-hot\");''']
                 code.append(f"""
                     let {val} = unsafe {{
                         if {we_val} {{
-                            let mem_interface = Arc::clone(&sim.mem_interface);
-                            let success = mem_interface.as_ref().send_request({idx_val} as i64, true, rust_callback, sim as *const _ as *mut _,);
+                            let mem_interface = &sim.mem_interface;
+                            let success = mem_interface.send_request({idx_val} as i64, true, rust_callback, sim as *const _ as *mut _,);
                             success
                         }} else {{
                             false
@@ -360,10 +360,11 @@ assert!(cond.count_ones() == 1, \"Select1Hot: condition is not 1-hot\");''']
                 module_writer = self.module_name
                 self.modules_for_callback["memory"] = module_writer
                 self.modules_for_callback["store"] = array_name
+                port_id = id("DRAM")
                 code.append(f"""{{
                     let stamp = sim.stamp - sim.stamp % 100 + 50;
-                    sim.{array_name}.write.push(
-                        ArrayWrite::new(stamp, {idx_val} as usize, {value_val}.clone(), "{module_writer}"));
+                    sim.{array_name}.write_port.push(
+                        ArrayWrite::new(stamp, {idx_val} as usize, {value_val}.clone(), "{module_writer}", {port_id}));
                 }}""")
 
         # Format the result with proper indentation and variable assignment

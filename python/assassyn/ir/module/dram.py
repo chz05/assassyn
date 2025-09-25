@@ -14,6 +14,7 @@ from ..expr import mem_write, send_read_request, has_mem_resp, send_write_reques
 
 class DRAM(Module): # pylint: disable=too-many-instance-attributes, duplicate-code
     '''The DRAM module.'''
+    #pylint: disable=duplicate-code
     width: int  # Width of the memory in bits
     depth: int  # Depth of the memory in words
     init_file: str  # Path to initialization file

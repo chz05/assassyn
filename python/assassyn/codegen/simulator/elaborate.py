@@ -23,6 +23,7 @@ def dump_modules(sys: SysBuilder, fd):
     # Add imports
     fd.write("""
 use super::runtime::*;
+use super::ramulator::*;
 use super::simulator::Simulator;
 use std::collections::VecDeque;
 use num_bigint::{BigInt, BigUint};

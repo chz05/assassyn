@@ -103,6 +103,7 @@ def barrier(node):
     '''Barrier the current simulation state.'''
     return Intrinsic(Intrinsic.BARRIER, node)
 
+@ir_builder
 def has_mem_resp(memory):
     '''Check if there is a memory response.'''
     return Intrinsic(Intrinsic.HAS_MEM_RESP, memory)
@@ -131,3 +132,4 @@ def mem_resp(memory):
 def use_dram(dram):
     '''Use a DRAM module.'''
     return Intrinsic(Intrinsic.USE_DRAM, dram)
+    

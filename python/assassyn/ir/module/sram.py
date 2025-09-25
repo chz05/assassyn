@@ -10,7 +10,7 @@ from .memorybase import MemoryBase
 
 class SRAM(Downstream): # pylint: disable=too-many-instance-attributes, duplicate-code
     '''The SRAM module, a subclass of Downstream.'''
-
+    #pylint: disable=duplicate-code
     width: int  # Width of the memory in bits
     depth: int  # Depth of the memory in words
     init_file: str  # Path to initialization file
