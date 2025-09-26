@@ -56,7 +56,7 @@ extern "C" fn rust_callback(req: *mut Request, ctx: *mut c_void) {{
 }}
         """)
     for module in sys.modules[:] + sys.downstreams[:]:
-        # Then, second time dump
+        # Then, second time dump for real visit modules
         module_code = em.visit_module(module)
         fd.write(module_code)
 
