@@ -309,6 +309,9 @@ assert!(cond.count_ones() == 1, \"Select1Hot: condition is not 1-hot\");''']
                     unsafe {{
                         let mem_interface = &sim.mem_interface;
                         let success = mem_interface.send_request({idx_val} as i64, false, rust_callback, sim as *const _ as *mut _,);
+                        if success {{
+                            sim.request_stamp_map_table.insert({idx_val} as i64, sim.stamp);
+                        }}
                         success
                     }}
                 }}""")

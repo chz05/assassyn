@@ -72,15 +72,16 @@ class Driver(Module):
             dram.bound.async_called()
 
 
-# def check(raw):
-#     for line in raw.splitlines():
-#         if '[memuser' in line:
-#             toks = line.split()
-#             c = int(toks[-1])
-#             b = int(toks[-3])
-#             a = int(toks[-5])
-#             assert c % 2 == 1 or a == 0, f'Expected odd number or zero, got {line}'
-#             assert c == a + b, f'{a} + {b} = {c}'
+def check(raw):
+    for line in raw.splitlines():
+        if '[handle_handler' in line:
+            toks = line.split()
+            a_string = toks[-12] if len(toks) >= 12 else '0'
+            if a_string != 'Write':      
+                c = int(toks[-1])
+                b = int(toks[-3])
+                a = int(toks[-5])
+                assert c % 2 == 1 or a == 0, f'Expected odd number or zero or write operation, got {line}'
 
 
 def impl(sys_name, width, init_file, resource_base):
@@ -97,7 +98,7 @@ def impl(sys_name, width, init_file, resource_base):
     simulator_path, verilator_path = backend.elaborate(sys, **config)
 
     raw = utils.run_simulator(simulator_path)
-    # check(raw)
+    check(raw)
 
     # if utils.has_verilator():
     #     raw = utils.run_verilator(verilator_path)

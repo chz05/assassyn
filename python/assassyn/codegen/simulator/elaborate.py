@@ -45,7 +45,9 @@ extern "C" fn rust_callback(req: *mut Request, ctx: *mut c_void) {{
         let req = &*req;
         let sim: &mut Simulator = &mut *(ctx as *mut Simulator);
         let cycles = (req.depart - req.arrive) as usize;
-        let stamp = sim.stamp;
+        let stamp = sim.request_stamp_map_table
+            .remove(&req.addr)
+            .unwrap_or_else(|| sim.stamp);;
         sim.{dict_modules_callback.get("MemUser_rdata")}.push.push(FIFOPush::new(
             stamp + 100 * cycles,
             sim.{dict_modules_callback.
