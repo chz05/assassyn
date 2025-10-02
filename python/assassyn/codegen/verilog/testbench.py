@@ -43,8 +43,20 @@ def runner():
     sram_blackbox_files = glob.glob('sram_blackbox_*.sv')
     srcs = srcs + sram_blackbox_files
     srcs = srcs + ['fifo.sv', 'trigger_counter.sv'{}]
+    home = os.getenv('ASSASSYN_HOME', os.getcwd())
     runner = get_runner(sim)
-    runner.build(sources=srcs, hdl_toplevel='Top', always=True)
+    runner.build(sources=srcs, hdl_toplevel='Top', always=True, build_args=[
+        "-CFLAGS", f"-I{{home}}/testbench/simulator",
+        "-LDFLAGS", 
+        " ".join([
+            f"-L{{home}}/testbench/simulator/build/lib",
+            "-lwrapper",
+            f"-L{{home}}/3rd-party/ramulator2",
+            "-lramulator",
+            f"-Wl,-rpath,{{home}}/testbench/simulator/build/lib",
+            f"-Wl,-rpath,{{home}}/3rd-party/ramulator2",
+        ]),
+    ],)
     runner.test(hdl_toplevel='Top', test_module='tb')
 
 if __name__ == "__main__":
