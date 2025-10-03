@@ -86,7 +86,7 @@ jobs:
           ${{ env.ASSASSYN_DOCKER }} /bin/zsh -c "source scripts/init/py-package.sh && python -m pylint --rcfile python/.pylintrc python/assassyn"
       - name: Run PyRamulator
         run: |
-          ${{ env.ASSASSYN_DOCKER }} /bin/zsh -c "source setup.sh && source scripts/init/py-package.sh && source scripts/init/ramulator2.sh && python python/unit-tests/test_ramulator2.py"
+          ${{ env.ASSASSYN_DOCKER }} /bin/zsh -c "source setup.sh && source scripts/init/py-package.sh && source scripts/init/ramulator2.sh && python python/unit-tests/test_pyramulator.py"
       - name: Python Frontend Unit Tests
         run: |
           ${{ env.ASSASSYN_DOCKER }} /bin/zsh -c "source setup.sh && source scripts/init/py-package.sh && source scripts/init/circt.sh && python -m pytest -n 8 python/ci-tests"
