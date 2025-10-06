@@ -1,7 +1,7 @@
 # DRAM Request Test Program Explanation
 
-This program demonstrates how to use `MyWrapper` to send read and write requests to a simulated DRAM system.  
-It is designed to produce the same result as `assassyn/python/ci-tests/test_dram.py`, ensuring that the C++ implementation matches the Python unit test. We use `libramulator.so` from `Ramulator2.0` to implement the `MyWrapper` interface, exposing initialization, request, ticking, and finishing functions.
+This program demonstrates how to use `CRamualator2Wrapper` to send read and write requests to a simulated DRAM system.  
+It is designed to produce the same result as `assassyn/python/ci-tests/test_dram.py`, ensuring that the C++ implementation matches the Python unit test. We use `libramulator.so` from `Ramulator2.0` to implement the `CRamualator2Wrapper` interface, exposing initialization, request, ticking, and finishing functions.
 
 ---
 
@@ -18,9 +18,9 @@ The program:
 
 ---
 
-## Key Functions in `MyWrapper`
+## Key Functions in `CRamualator2Wrapper`
 
-The `MyWrapper` class provides a simple interface for interacting with the simulated memory system.  
+The `CRamualator2Wrapper` class provides a simple interface for interacting with the simulated memory system.  
 It allows you to initialize the system, send requests, tick the simulation, and finish cleanly.
 
 ---

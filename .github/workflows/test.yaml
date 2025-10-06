@@ -72,8 +72,8 @@ jobs:
         id: cache-wrapper
         uses: actions/cache@v4
         with:   
-          path: ${{ github.workspace }}/testbench/simulator/build
-          key: ${{ runner.os }}-wrapper-${{ hashFiles('testbench/simulator/.git/HEAD') }}
+          path: ${{ github.workspace }}/tools/c-ramulator2-wrapper/build
+          key: ${{ runner.os }}-wrapper-${{ hashFiles('tools/c-ramulator2-wrapper/.git/HEAD') }}
           restore-keys: |
             ${{ runner.os }}-wrapper-
       - name: Build and Install wrapper in Container #if cache miss
