@@ -120,7 +120,7 @@ class PyRamulator:
             wrapper.dram_delete(self.obj)
             self.obj = None
 
-    def get_memory_tck(self) -> float:
+    def get_memory_tCK(self) -> float:
         """Get memory clock period (tCK) in nanoseconds.
 
         Returns:

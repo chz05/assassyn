@@ -124,7 +124,7 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
         // Advance simulation
         unsafe {
             memory.frontend_tick();
-            memory.memory_tick();
+            memory.memory_system_tick();
         }
 
         v = plused;

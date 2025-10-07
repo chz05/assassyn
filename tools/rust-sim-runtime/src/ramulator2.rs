@@ -54,10 +54,16 @@ impl MemoryInterface {
     frontend_tick(self.wrapper);
   }
 
-  pub unsafe fn memory_tick(&self) {
+  pub unsafe fn memory_system_tick(&self) {
     let memory_system_tick: Symbol<unsafe extern "C" fn(CRamualator2Wrapper)> =
       self.lib.get(b"memory_system_tick").unwrap();
     memory_system_tick(self.wrapper);
+  }
+
+  pub unsafe fn get_memory_tCK(&self) -> f32 {
+    let get_memory_tck: Symbol<unsafe extern "C" fn(CRamualator2Wrapper) -> f32> =
+      self.lib.get(b"get_memory_tCK").unwrap();
+    get_memory_tck(self.wrapper)
   }
 
   pub unsafe fn send_request(

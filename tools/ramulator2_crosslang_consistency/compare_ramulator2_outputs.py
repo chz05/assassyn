@@ -16,14 +16,7 @@ import shlex
 import subprocess
 import sys
 from typing import Dict, Tuple
-
-
-def get_assassyn_home() -> str:
-    env_home = os.getenv("ASSASSYN_HOME")
-    if env_home and os.path.isdir(env_home):
-        return env_home
-    return os.getcwd()
-
+from assassyn.utils import repo_path
 
 def run_command(command: str, workdir: str, env: Dict[str, str] | None = None) -> Tuple[int, str, str]:
     proc = subprocess.Popen(
@@ -120,7 +113,7 @@ def main() -> int:
     )
     args = parser.parse_args()
 
-    home = get_assassyn_home()
+    home = repo_path()
     targets = get_expected_targets(home)
 
     # Build artifacts if missing

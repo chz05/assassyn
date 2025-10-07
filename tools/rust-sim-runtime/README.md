@@ -21,7 +21,7 @@ The test includes fallback mechanisms to try alternative extensions if the prima
 
 ## Prerequisites
 
-home is your Assassyn repo location such as: /root/assassyn/
+This document assumes your repository root is available (e.g., via `ASSASSYN_HOME` or your current working directory).
 1. **Build the C++ wrapper library:**
    ```bash
    cd /{home}/tools/c-ramulator2-wrapper
@@ -38,12 +38,12 @@ home is your Assassyn repo location such as: /root/assassyn/
 
 ## Running the Test
 
-### With ASSASSYN_HOME environment variable:
-If you are in docker, you automatically have the ASSASSYN_HOME environment variable
+### With `ASSASSYN_HOME` environment variable
+If you are in Docker, `ASSASSYN_HOME` is typically set automatically.
 ```bash
 cargo run --bin test_ramulator2
 ```
-if you do not have the ASSASSYN_HOME, you need to set the ASSASSYN_HOME as you assassyn project directory.
+If `ASSASSYN_HOME` is not set, either set it to the repo root or run the command from the repository root.
 
 ## Expected Output
 
@@ -60,7 +60,7 @@ The test follows the same pattern as `test.cpp`:
 3. Alternate between read and write requests
 4. Use address patterns: `raddr = v & 0xFF`, `waddr = (v+1) & 0xFF`
 5. Print write request status and read completion callbacks
-6. Advance simulation with `frontend_tick()` and `memory_tick()`
+6. Advance simulation with `frontend_tick()` and `memory_system_tick()`
 
 ## Cross-Validation
 

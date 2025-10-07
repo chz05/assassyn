@@ -165,7 +165,7 @@ cmake ..
 make
 ```
 
-This creates `libwrapper` (with the appropriate OS extension) in the `build/lib/` directory, which PyRamulator loads at runtime.
+This creates `libwrapper` (with the appropriate OS extension) in the `build/lib/` directory. PyRamulator locates and loads the correct shared library for your platform.
 
 ## Cross-Validation Suite
 
