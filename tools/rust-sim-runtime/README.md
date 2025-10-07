@@ -10,10 +10,10 @@ This test validates that:
 3. The same request sequence produces identical output in both Rust and C++
 
 ## Prerequisites
-
+home is your Assassyn repo location such as: /root/assassyn/
 1. **Build the C++ wrapper library:**
    ```bash
-   cd /root/assassyn/tools/c-ramulator2-wrapper
+   cd /{home}/tools/c-ramulator2-wrapper
    mkdir -p build
    cd build
    cmake ..
@@ -22,7 +22,7 @@ This test validates that:
 
 2. **Ensure the config file exists:**
    ```bash
-   ls /root/assassyn/tools/c-ramulator2-wrapper/configs/example_config.yaml
+   ls /{home}/tools/c-ramulator2-wrapper/configs/example_config.yaml
    ```
 
 ## Running the Test
@@ -30,7 +30,6 @@ This test validates that:
 ### With ASSASSYN_HOME environment variable:
 If you are in docker, you automatically have the ASSASSYN_HOME environment variable
 ```bash
-cd /root/assassyn/tools/rust-sim-runtime
 cargo run --bin test_ramulator2
 ```
 if you do not have the ASSASSYN_HOME, you need to set the ASSASSYN_HOME as you assassyn project directory.
