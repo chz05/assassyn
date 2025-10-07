@@ -1,9 +1,9 @@
-import os
 import sys
+from assassyn.utils import repo_path
 
 from assassyn.ramulator2 import PyRamulator, Request
 
-home = os.getenv('ASSASSYN_HOME', os.getcwd())
+home = repo_path()
 sim = PyRamulator(f"{home}/tools/c-ramulator2-wrapper/configs/example_config.yaml")
 
 is_write = False
