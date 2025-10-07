@@ -1,6 +1,11 @@
+"""Python wrapper for Ramulator2 memory simulator.
+
+This module provides a Python interface to the Ramulator2 memory simulation
+library through the CRamualator2Wrapper C++ wrapper.
+"""
 import os
 import ctypes
-from ctypes import c_void_p, c_char_p, c_float, c_bool, c_int64, CFUNCTYPE, POINTER
+from ctypes import c_void_p, c_char_p, c_float, c_bool, c_int64, CFUNCTYPE
 
 home = os.getenv('ASSASSYN_HOME', os.getcwd())
 wrapper_lib_path = os.path.abspath(f"{home}/tools/c-ramulator2-wrapper/build/lib/libwrapper.so")
@@ -9,8 +14,9 @@ wrapper = ctypes.CDLL(wrapper_lib_path)
 ramulator = ctypes.CDLL(ramulator_lib_path)
 
 
-# --- Define Request struct (partial mirror) ---
+# --- Define Request struct (partial mirror) --- pylint: disable=too-few-public-methods
 class Request(ctypes.Structure):
+    """Memory request structure mirroring the C++ Request class."""
     _fields_ = [
         ("addr", c_int64),               # Addr_t
         ("addr_vec_placeholder", ctypes.c_byte * 24),  # std::vector dummy (GCC/libstdc++ x86_64)
@@ -56,8 +62,23 @@ wrapper.frontend_tick.restype = None
 wrapper.memory_system_tick.argtypes = [CRamualator2WrapperPtr]
 wrapper.memory_system_tick.restype = None
 
+
 class PyRamulator:
+    """Python wrapper for Ramulator2 memory simulator.
+
+    This class provides a high-level interface to interact with the Ramulator2
+    memory simulator through the CRamualator2Wrapper C++ wrapper.
+    """
+
     def __init__(self, config_path: str):
+        """Initialize PyRamulator with configuration file.
+
+        Args:
+            config_path: Path to the YAML configuration file.
+
+        Raises:
+            RuntimeError: If the CRamualator2Wrapper instance cannot be created.
+        """
         self.obj = wrapper.dram_new()
         if not self.obj:
             raise RuntimeError("Failed to create CRamualator2Wrapper instance")
@@ -65,33 +86,54 @@ class PyRamulator:
         self.call_backs = []  # to keep references to callbacks
         self.ctxs = {}  # to keep references to ctx objects
 
-    
     def __del__(self):
+        """Clean up the underlying C++ wrapper instance."""
         if self.obj:
             wrapper.dram_delete(self.obj)
-            self.obj = None 
-    
-    def get_memory_tCK(self) -> float:
+            self.obj = None
+
+    def get_memory_tck(self) -> float:
+        """Get memory clock period (tCK) in nanoseconds.
+
+        Returns:
+            Memory clock period in nanoseconds.
+        """
         return wrapper.get_memory_tCK(self.obj)
-    
+
     def finish(self):
+        """Finalize the simulation and collect statistics."""
         wrapper.finish(self.obj)
-    
+
     def frontend_tick(self):
+        """Advance the frontend simulation by one clock cycle."""
         wrapper.frontend_tick(self.obj)
-    
+
     def memory_system_tick(self):
+        """Advance the memory system simulation by one clock cycle."""
         wrapper.memory_system_tick(self.obj)
 
     def send_request(self, addr: int, is_write: bool, callback, ctx) -> bool:
+        """Send a memory request to the simulated memory system.
+
+        Args:
+            addr: Memory address for the request.
+            is_write: True for write request, False for read request.
+            callback: Python function to call when request completes.
+            ctx: Context object passed to the callback function.
+
+        Returns:
+            True if request was successfully enqueued, False otherwise.
+
+        Raises:
+            ValueError: If callback is None.
+        """
         if callback is None:
             raise ValueError("Callback must not be None")
-
         # Wrap Python ctx object → store it → get its pointer
         py_obj = ctypes.py_object(ctx)
         ctx_ptr = ctypes.cast(ctypes.pointer(py_obj), c_void_p)
         self.ctxs[ctx_ptr.value] = py_obj
-        
+
         # C callback wrapper
         def _c_callback(req_ptr, ctx_ptr):
             req = ctypes.cast(req_ptr, ctypes.POINTER(Request)).contents
