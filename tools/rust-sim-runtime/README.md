@@ -1,6 +1,6 @@
 # Rust Ramulator2 Test
 
-This Rust test (`test_ramulator2.rs`) mirrors the functionality of the C++ test (`test.cpp`) in the `c-ramulator2-wrapper` directory. It serves as a cross-validation tool to ensure that both Rust and C++ implementations produce identical results when using the same underlying `libramulator` library (with OS-appropriate extension).
+This Rust test (`tests/test_ramulator2.rs`) mirrors the functionality of the C++ test (`test.cpp`) in the `c-ramulator2-wrapper` directory. It serves as a cross-validation tool to ensure that both Rust and C++ implementations produce identical results when using the same underlying `libramulator` library (with OS-appropriate extension).
 
 ## Purpose
 

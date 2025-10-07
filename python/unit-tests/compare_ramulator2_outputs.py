@@ -81,9 +81,9 @@ def build_rust_if_needed(home: str, debug: bool = False) -> None:
     workdir = os.path.join(home, "tools/rust-sim-runtime")
     if debug:
         sys.stderr.write(f"[DEBUG] Building Rust in {workdir}\n")
-    code, out, err = run_command("cargo build --quiet --bin test_ramulator2", workdir, env=os.environ.copy())
+    code, out, err = run_command("cargo test --quiet --test test_ramulator2", workdir, env=os.environ.copy())
     if code != 0:
-        raise RuntimeError(f"Cargo build failed in {workdir}:\n{err}")
+        raise RuntimeError(f"Cargo test build failed in {workdir}:\n{err}")
 
 
 def compare_texts(name_a: str, text_a: str, name_b: str, text_b: str) -> str:

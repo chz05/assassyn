@@ -60,6 +60,7 @@ impl MemoryInterface {
     memory_system_tick(self.wrapper);
   }
 
+  #[allow(non_snake_case)]
   pub unsafe fn get_memory_tCK(&self) -> f32 {
     let get_memory_tck: Symbol<unsafe extern "C" fn(CRamualator2Wrapper) -> f32> =
       self.lib.get(b"get_memory_tCK").unwrap();
