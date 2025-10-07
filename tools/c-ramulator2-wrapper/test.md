@@ -1,7 +1,32 @@
-# DRAM Request Test Program Explanation
+# DRAM Request Test Program - Cross-Validation Suite
 
 This program demonstrates how to use `CRamualator2Wrapper` to send read and write requests to a simulated DRAM system.  
-It is designed to produce the same result as `assassyn/python/ci-tests/test_dram.py`, ensuring that the C++ implementation matches the Python unit test. We use `libramulator.so` from `Ramulator2.0` to implement the `CRamualator2Wrapper` interface, exposing initialization, request, ticking, and finishing functions.
+**This test serves as a cross-validation mechanism between Python and Rust implementations**, ensuring that both language bindings produce identical results when invoking the same underlying `libramulator.so` library from Ramulator2.0.
+
+The test is designed to produce the same result as:
+- `assassyn/python/ci-tests/test_dram.py` (Python implementation)
+- `assassyn/python/unit-tests/test_ramulator2.py` (Python PyRamulator wrapper)
+- Rust implementations using the same `CRamualator2Wrapper` interface
+
+We use `libramulator.so` from `Ramulator2.0` to implement the `CRamualator2Wrapper` interface, exposing initialization, request, ticking, and finishing functions across multiple language bindings.
+
+---
+
+## Cross-Validation Purpose
+
+This test program is part of a comprehensive cross-validation suite that ensures consistency across different language implementations:
+
+1. **Python Direct Binding**: `test_dram.py` - Direct Python calls to `libramulator.so`
+2. **Python Wrapper**: `test_ramulator2.py` - Python using `PyRamulator` class
+3. **C++ Wrapper**: This test - C++ using `CRamualator2Wrapper` class
+4. **Rust Implementation**: Rust bindings using the same `CRamualator2Wrapper` interface
+
+All implementations must produce **identical output** when given the same:
+- Configuration file
+- Request sequence
+- Simulation parameters
+
+This validates that the language bindings correctly interface with the core `libramulator.so` library and maintain behavioral consistency across different programming languages.
 
 ---
 
