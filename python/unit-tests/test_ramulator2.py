@@ -17,15 +17,19 @@ for i in range(200):
     waddr = plused & 0xFF
     addr = waddr if is_write else raddr
 
-    def callback(req: Request, i=i):  # capture i in closure    
-       print(f"Cycle {i + 3 + (req.depart - req.arrive)}: "
-              f"Request completed: {req.addr} the data is: {req.addr - 1}\n")
+    def callback(req: Request, i=i):  # capture i in closure
+        print(
+            f"Cycle {i + 3 + (req.depart - req.arrive)}: Request completed: {req.addr} the data is: {req.addr - 1}",
+            flush=True,
+        )
 
     ok = sim.send_request(addr, is_write, callback, i)
     write_success = "true" if ok else "false"
     if is_write:
-        print(f"Cycle {i + 2}: Write request sent for address {addr}, "
-              f"success or not (true or false){write_success}\n")
+        print(
+            f"Cycle {i + 2}: Write request sent for address {addr}, success or not (true or false){write_success}",
+            flush=True,
+        )
 
     is_write = not is_write
     sim.frontend_tick()

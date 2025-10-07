@@ -89,7 +89,7 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
     let mut is_write = false;
     let mut v = 0i32; // counter
 
-    println!("Starting Rust Ramulator2 test (should match C++ test.cpp output)...");
+    // Align output strictly with C++ test.cpp
 
     for i in 0..200 {
         let plused = v + 1;
@@ -104,9 +104,7 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
         let ctx_ptr = Box::into_raw(cycle_context) as *mut c_void;
 
         // Send request
-        let ok = unsafe {
-            memory.send_request(addr, is_write, request_callback, ctx_ptr)
-        };
+        let ok = unsafe { memory.send_request(addr, is_write, request_callback, ctx_ptr) };
 
         // Print write request status
         if is_write {
@@ -116,6 +114,8 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
                 addr,
                 ok
             );
+            use std::io::Write;
+            std::io::stdout().flush().ok();
         }
 
         // Toggle write/read
@@ -135,6 +135,6 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
         memory.finish();
     }
 
-    println!("Rust Ramulator2 test completed successfully!");
+    // No trailing summary line to keep output identical to C++
     Ok(())
 }
