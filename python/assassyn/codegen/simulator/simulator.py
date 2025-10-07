@@ -384,7 +384,7 @@ def dump_simulator( #pylint: disable=too-many-locals, too-many-branches, too-man
         sim.tick_registers();
         unsafe {{
             sim.mem_interface.frontend_tick();
-            sim.mem_interface.memory_tick();
+            sim.mem_interface.memory_system_tick();
         }}
       }}
     """)
