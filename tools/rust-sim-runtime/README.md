@@ -1,6 +1,6 @@
 # Rust Ramulator2 Test
 
-This Rust test (`test_ramulator2.rs`) mirrors the functionality of the C++ test (`test.cpp`) in the `c-ramulator2-wrapper` directory. It serves as a cross-validation tool to ensure that both Rust and C++ implementations produce identical results when using the same underlying `libramulator.so` library.
+This Rust test (`test_ramulator2.rs`) mirrors the functionality of the C++ test (`test.cpp`) in the `c-ramulator2-wrapper` directory. It serves as a cross-validation tool to ensure that both Rust and C++ implementations produce identical results when using the same underlying `libramulator` library (with OS-appropriate extension).
 
 ## Purpose
 
@@ -8,8 +8,19 @@ This test validates that:
 1. Rust bindings correctly interface with the `CRamualator2Wrapper` C++ wrapper
 2. Memory simulation behavior is consistent across different language implementations
 3. The same request sequence produces identical output in both Rust and C++
+4. Cross-platform compatibility works correctly on different operating systems
+
+## Cross-Platform Support
+
+The Rust implementation automatically handles different operating systems:
+- **Linux**: Uses `.so` shared libraries
+- **Windows**: Uses `.dll` shared libraries
+- **macOS**: Uses `.dylib` shared libraries
+
+The test includes fallback mechanisms to try alternative extensions if the primary one fails, ensuring maximum compatibility across different build configurations.
 
 ## Prerequisites
+
 home is your Assassyn repo location such as: /root/assassyn/
 1. **Build the C++ wrapper library:**
    ```bash
@@ -58,4 +69,4 @@ This test is part of a comprehensive validation suite that includes:
 - **Python Test**: `python/unit-tests/test_ramulator2.py`
 - **Rust Test**: `tools/rust-sim-runtime/src/test_ramulator2.rs`
 
-All tests must produce identical output when given the same configuration and request sequence.
+All tests must produce identical output when given the same configuration and request sequence, regardless of the operating system or shared library extension used.

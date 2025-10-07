@@ -1,4 +1,4 @@
-use libloading::os::unix::{Library, Symbol};
+use libloading::{Library, Symbol};
 use std::error::Error;
 use std::ffi::{c_char, c_void, CString};
 

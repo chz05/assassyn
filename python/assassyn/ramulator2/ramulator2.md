@@ -2,8 +2,13 @@
 
 PyRamulator is a Python wrapper that provides a high-level interface to interact with the Ramulator2 memory simulator. It uses two shared libraries to bridge Python and C++ functionality:
 
-- **`libwrapper.so`**: Custom C++ wrapper library (`CRamualator2Wrapper`) that provides C-compatible functions
-- **`libramulator.so`**: Core Ramulator2 library containing the memory simulation engine
+- **`libwrapper`**: Custom C++ wrapper library (`CRamualator2Wrapper`) that provides C-compatible functions
+- **`libramulator`**: Core Ramulator2 library containing the memory simulation engine
+
+The wrapper automatically detects the operating system and loads the appropriate shared library extension:
+- **Linux**: `.so` files
+- **Windows**: `.dll` files  
+- **macOS**: `.dylib` files
 
 ## Overview
 
@@ -136,9 +141,17 @@ sim.finish()
 ## Dependencies
 
 The PyRamulator module requires:
-- `libwrapper.so`: Built from `tools/c-ramulator2-wrapper/CRamualator2Wrapper.cpp`
-- `libramulator.so`: Core Ramulator2 library from `3rd-party/ramulator2/`
+- `libwrapper`: Built from `tools/c-ramulator2-wrapper/CRamualator2Wrapper.cpp` (with OS-appropriate extension)
+- `libramulator`: Core Ramulator2 library from `3rd-party/ramulator2/` (with OS-appropriate extension)
 - Python `ctypes` module for C library interfacing
+
+## Cross-Platform Support
+
+PyRamulator automatically handles different operating systems by:
+1. Detecting the current OS using `sys.platform`
+2. Loading the appropriate shared library extension (`.so`, `.dll`, or `.dylib`)
+3. Providing fallback mechanisms to try alternative extensions if the primary one fails
+4. Raising a clear error message if no compatible library is found
 
 ## Building Requirements
 
@@ -152,7 +165,7 @@ cmake ..
 make
 ```
 
-This creates `libwrapper.so` in the `build/lib/` directory, which PyRamulator loads at runtime.
+This creates `libwrapper` (with the appropriate OS extension) in the `build/lib/` directory, which PyRamulator loads at runtime.
 
 ## Cross-Validation Suite
 
@@ -167,4 +180,4 @@ All implementations must produce **identical output** when given the same:
 - Request sequence
 - Simulation parameters
 
-This validates that the language bindings correctly interface with the core `libramulator.so` library and maintain behavioral consistency across different programming languages.
+This validates that the language bindings correctly interface with the core `libramulator` library (with OS-appropriate extension) and maintain behavioral consistency across different programming languages and operating systems.

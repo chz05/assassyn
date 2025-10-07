@@ -1,9 +1,46 @@
 use libloading::Library;
 use std::ffi::c_void;
 use std::env;
+use std::path::Path;
 
 mod ramulator2;
 use ramulator2::{MemoryInterface, Request, RequestCallback};
+
+/// Get the appropriate shared library extension for the current OS
+fn get_shared_lib_extension() -> &'static str {
+    if cfg!(target_os = "windows") {
+        ".dll"
+    } else if cfg!(target_os = "macos") {
+        ".dylib"
+    } else {
+        ".so" // Linux and other Unix-like systems
+    }
+}
+
+/// Load a shared library with fallback for different extensions
+fn load_shared_library(lib_path: &str) -> Result<Library, Box<dyn std::error::Error>> {
+    let ext = get_shared_lib_extension();
+    let primary_path = format!("{}{}", lib_path, ext);
+    
+    // Try the primary extension first
+    if Path::new(&primary_path).exists() {
+        return Ok(unsafe { Library::new(&primary_path)? });
+    }
+    
+    // Fallback: try other common extensions
+    let fallback_extensions = [".so", ".dll", ".dylib"];
+    for fallback_ext in &fallback_extensions {
+        if *fallback_ext != ext {
+            let fallback_path = format!("{}{}", lib_path, fallback_ext);
+            if Path::new(&fallback_path).exists() {
+                return Ok(unsafe { Library::new(&fallback_path)? });
+            }
+        }
+    }
+    
+    // If no library found, return an error
+    Err(format!("Could not find shared library at {} with any supported extension", lib_path).into())
+}
 
 // Callback function to handle request completion
 extern "C" fn request_callback(req: *mut Request, ctx: *mut c_void) {
@@ -33,13 +70,13 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
         return Err("Config file not found".into());
     }
 
-    // Load libramulator.so first (dependency for libwrapper.so)
-    let lib_ramulator_path = format!("{}/3rd-party/ramulator2/libramulator.so", home);
-    let _ramulator_lib = unsafe { Library::new(&lib_ramulator_path)? };
+    // Load libramulator first (dependency for libwrapper)
+    let lib_ramulator_path = format!("{}/3rd-party/ramulator2/libramulator", home);
+    let _ramulator_lib = load_shared_library(&lib_ramulator_path)?;
     
     // Load the wrapper library
-    let lib_path = format!("{}/tools/c-ramulator2-wrapper/build/lib/libwrapper.so", home);
-    let lib = unsafe { Library::new(&lib_path)? };
+    let lib_path = format!("{}/tools/c-ramulator2-wrapper/build/lib/libwrapper", home);
+    let lib = load_shared_library(&lib_path)?;
 
     // Create memory interface
     let memory = unsafe { MemoryInterface::new(lib.into())? };

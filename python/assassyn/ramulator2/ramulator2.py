@@ -4,14 +4,42 @@ This module provides a Python interface to the Ramulator2 memory simulation
 library through the CRamualator2Wrapper C++ wrapper.
 """
 import os
+import sys
 import ctypes
 from ctypes import c_void_p, c_char_p, c_float, c_bool, c_int64, CFUNCTYPE
 
+def get_shared_lib_extension():
+    """Get the appropriate shared library extension for the current OS."""
+    if sys.platform.startswith('win'):
+        return '.dll'
+    if sys.platform.startswith('darwin'):
+        return '.dylib'
+    # Linux and other Unix-like systems
+    return '.so'
+
+def load_shared_library(lib_path):
+    """Load a shared library with fallback for different extensions."""
+    ext = get_shared_lib_extension()
+    primary_path = lib_path + ext
+    # Try the primary extension first
+    if os.path.exists(primary_path):
+        return ctypes.CDLL(primary_path)
+    # Fallback: try other common extensions
+    fallback_extensions = ['.so', '.dll', '.dylib']
+    for fallback_ext in fallback_extensions:
+        if fallback_ext != ext:
+            fallback_path = lib_path + fallback_ext
+            if os.path.exists(fallback_path):
+                return ctypes.CDLL(fallback_path)
+    # If no library found, raise an error
+    raise FileNotFoundError(f"Could not find shared library at \
+        {lib_path} with any supported extension")
+
 home = os.getenv('ASSASSYN_HOME', os.getcwd())
-wrapper_lib_path = os.path.abspath(f"{home}/tools/c-ramulator2-wrapper/build/lib/libwrapper.so")
-ramulator_lib_path = os.path.abspath(f"{home}/3rd-party/ramulator2/libramulator.so")
-wrapper = ctypes.CDLL(wrapper_lib_path)
-ramulator = ctypes.CDLL(ramulator_lib_path)
+wrapper_lib_path = os.path.abspath(f"{home}/tools/c-ramulator2-wrapper/build/lib/libwrapper")
+ramulator_lib_path = os.path.abspath(f"{home}/3rd-party/ramulator2/libramulator")
+wrapper = load_shared_library(wrapper_lib_path)
+ramulator = load_shared_library(ramulator_lib_path)
 
 
 # --- Define Request struct (partial mirror) --- pylint: disable=too-few-public-methods
