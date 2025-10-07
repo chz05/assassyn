@@ -1,14 +1,14 @@
 #!/usr/bin/env python3
-"""Compare outputs from C++, Rust, and Python Ramulator2 wrappers.
+"""Cross-language validation invoker for Ramulator2 wrappers.
 
 This script runs the following and compares their stdout outputs for equality:
 - C++ executable: $ASSASSYN_HOME/tools/c-ramulator2-wrapper/build/bin/test
-- Rust binary:    cargo run --bin test_ramulator2 (in tools/rust-sim-runtime)
+- Rust binary:    cargo test --test test_ramulator2 (in tools/rust-sim-runtime)
 - Python script:  $ASSASSYN_HOME/python/unit-tests/test_ramulator2.py
 
+It sources setup.sh before running each command to ensure environment setup.
 Exits with non-zero status if any output differs or a command fails.
 """
-
 import argparse
 import difflib
 import os
@@ -17,6 +17,7 @@ import subprocess
 import sys
 from typing import Dict, Tuple
 from assassyn.utils import repo_path
+
 
 def run_command(command: str, workdir: str, env: Dict[str, str] | None = None) -> Tuple[int, str, str]:
     proc = subprocess.Popen(
@@ -40,7 +41,7 @@ def get_expected_targets(home: str) -> Dict[str, Tuple[str, str]]:
             os.path.join(home, "tools/c-ramulator2-wrapper/build/bin"),
         ),
         "rust": (
-            "cargo run --quiet --bin test_ramulator2",
+            "cargo test --quiet --test test_ramulator2 -- --nocapture",
             os.path.join(home, "tools/rust-sim-runtime"),
         ),
         "python": (
@@ -99,7 +100,7 @@ def compare_texts(name_a: str, text_a: str, name_b: str, text_b: str) -> str:
 
 
 def main() -> int:
-    parser = argparse.ArgumentParser(description="Compare Ramulator2 wrapper outputs across languages.")
+    parser = argparse.ArgumentParser(description="Cross-validate Ramulator2 wrapper outputs across languages.")
     parser.add_argument(
         "--skip",
         choices=["cpp", "rust", "python"],
@@ -110,6 +111,11 @@ def main() -> int:
         "--debug",
         action="store_true",
         help="Print commands/env and extra diagnostics when failures occur.",
+    )
+    parser.add_argument(
+        "--show-outputs",
+        action="store_true",
+        help="Display raw outputs from all languages before comparison.",
     )
     args = parser.parse_args()
 
@@ -178,8 +184,42 @@ def main() -> int:
             sys.stderr.write(f"[ERROR] {lang}: {msg}\n")
         return 2
 
+    # Show raw outputs if requested
+    if args.show_outputs:
+        for lang, (code, out, err) in results.items():
+            print(f"\n=== {lang.upper()} OUTPUT ===")
+            print("STDOUT:")
+            print(out)
+            if err:
+                print("STDERR:")
+                print(err)
+            print(f"Exit code: {code}")
+            print("=" * 50)
+
     # Normalize outputs slightly (strip trailing whitespace)
     norm = {k: v[1].rstrip() for k, v in results.items()}
+    
+    # Filter out Cargo test harness noise from Rust output
+    if "rust" in norm:
+        lines = norm["rust"].split('\n')
+        filtered_lines = []
+        for line in lines:
+            # Skip Cargo test harness lines
+            if (line.startswith("running ") and " test" in line) or \
+               line.startswith("test result:") or \
+               line.strip() == "." or \
+               line.strip() == "":
+                continue
+            filtered_lines.append(line)
+        norm["rust"] = '\n'.join(filtered_lines).rstrip()
+    
+    # Normalize whitespace differences in statistics sections for all languages
+    import re
+    for lang in norm:
+        # Remove ALL blank lines to eliminate formatting differences
+        lines = norm[lang].split('\n')
+        non_empty_lines = [line for line in lines if line.strip() != '']
+        norm[lang] = '\n'.join(non_empty_lines)
 
     languages = [k for k in ["cpp", "rust", "python"] if not args.skip or k not in args.skip]
     if len(languages) < 2:
@@ -203,5 +243,3 @@ def main() -> int:
 
 if __name__ == "__main__":
     sys.exit(main())
-
-

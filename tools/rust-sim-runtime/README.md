@@ -36,14 +36,27 @@ This document assumes your repository root is available (e.g., via `ASSASSYN_HOM
    ls /{home}/tools/c-ramulator2-wrapper/configs/example_config.yaml
    ```
 
-## Running the Test
+## Running the Integration Test
 
-### With `ASSASSYN_HOME` environment variable
-If you are in Docker, `ASSASSYN_HOME` is typically set automatically.
+The Rust test now lives under `tools/rust-sim-runtime/tests/test_ramulator2.rs` and runs as a Cargo integration test.
+
+### Show stdout (important for cross-language comparison)
+Run from the repository root or from `tools/rust-sim-runtime`:
 ```bash
-cargo run --bin test_ramulator2
+cargo test --test test_ramulator2 -- --nocapture
 ```
-If `ASSASSYN_HOME` is not set, either set it to the repo root or run the command from the repository root.
+
+To run the specific test by name (and still show stdout):
+```bash
+cargo test --test test_ramulator2 test_ramulator2_outputs_match_cpp -- --nocapture
+```
+
+List tests detected by Cargo:
+```bash
+cargo test --test test_ramulator2 -- --list
+```
+
+If `ASSASSYN_HOME` is not set, either set it to the repo root or run the command from the repository root so relative paths resolve correctly.
 
 ## Expected Output
 
