@@ -21,15 +21,15 @@ def load_shared_library(lib_path):
     """Load a shared library with fallback for different extensions.
 
     Uses RTLD_GLOBAL mode to handle recursive shared object dependencies
-    as per simulator.md documentation for macOS/Linux compatibility.
+    as per simulator.md documentation for macOS compatibility.
     """
     ext = get_shared_lib_extension()
     primary_path = lib_path + ext
     # Try the primary extension first
     if os.path.exists(primary_path):
-        # Use RTLD_GLOBAL mode for macOS/Linux compatibility
-        if sys.platform.startswith('darwin') or sys.platform.startswith('linux'):
-            # On macOS and Linux, use RTLD_GLOBAL to handle recursive dependencies
+        # Use RTLD_GLOBAL mode for macOS compatibility
+        if sys.platform.startswith('darwin'):
+            # On macOS, use RTLD_GLOBAL to handle recursive dependencies
             return ctypes.CDLL(primary_path, mode=ctypes.RTLD_GLOBAL)
         return ctypes.CDLL(primary_path)
     # Fallback: try other common extensions
@@ -38,7 +38,7 @@ def load_shared_library(lib_path):
         if fallback_ext != ext:
             fallback_path = lib_path + fallback_ext
             if os.path.exists(fallback_path):
-                if sys.platform.startswith('darwin') or sys.platform.startswith('linux'):
+                if sys.platform.startswith('darwin'):
                     return ctypes.CDLL(fallback_path, mode=ctypes.RTLD_GLOBAL)
                 return ctypes.CDLL(fallback_path)
     # If no library found, raise an error
