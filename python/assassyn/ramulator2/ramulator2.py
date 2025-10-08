@@ -18,19 +18,33 @@ def get_shared_lib_extension():
     return '.so'
 
 def load_shared_library(lib_path):
-    """Load a shared library with fallback for different extensions."""
+    """Load a shared library with fallback for different extensions.
+    
+    Uses RTLD_GLOBAL mode to handle recursive shared object dependencies
+    as per simulator.md documentation for macOS/Linux compatibility.
+    """
+    import ctypes.util
+    
     ext = get_shared_lib_extension()
     primary_path = lib_path + ext
     # Try the primary extension first
     if os.path.exists(primary_path):
-        return ctypes.CDLL(primary_path)
+        # Use RTLD_GLOBAL mode for macOS/Linux compatibility
+        if sys.platform.startswith('darwin') or sys.platform.startswith('linux'):
+            # On macOS and Linux, use RTLD_GLOBAL to handle recursive dependencies
+            return ctypes.CDLL(primary_path, mode=ctypes.RTLD_GLOBAL)
+        else:
+            return ctypes.CDLL(primary_path)
     # Fallback: try other common extensions
     fallback_extensions = ['.so', '.dll', '.dylib']
     for fallback_ext in fallback_extensions:
         if fallback_ext != ext:
             fallback_path = lib_path + fallback_ext
             if os.path.exists(fallback_path):
-                return ctypes.CDLL(fallback_path)
+                if sys.platform.startswith('darwin') or sys.platform.startswith('linux'):
+                    return ctypes.CDLL(fallback_path, mode=ctypes.RTLD_GLOBAL)
+                else:
+                    return ctypes.CDLL(fallback_path)
     # If no library found, raise an error
     raise FileNotFoundError(f"Could not find shared library at \
         {lib_path} with any supported extension")
