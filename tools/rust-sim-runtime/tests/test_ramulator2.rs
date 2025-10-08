@@ -3,11 +3,7 @@ use std::ffi::c_void;
 use std::env;
 use std::path::Path;
 
-// Include the runtime module directly for integration testing without requiring a library crate export
-mod ramulator2 {
-  include!("../src/ramulator2.rs");
-}
-use ramulator2::{MemoryInterface, Request, RequestCallback};
+use sim_runtime::ramulator2::{MemoryInterface, Request, RequestCallback};
 
 fn get_shared_lib_extension() -> &'static str {
   if cfg!(target_os = "windows") {

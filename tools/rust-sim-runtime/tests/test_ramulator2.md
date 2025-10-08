@@ -6,7 +6,4 @@ as described in its [corresponding doc](../../c-ramulator2-wrapper/test.md).
 
 ## Multi-platform Support
 
-As discussed in [Rust simulator generation](../../../python/assassyn/codegen/simulator/simulator.md),
-Linux and MacOS has different behaviors on dynamic objects that links other dynamic objects,
-and MacOS has to manually specify `RTLD_LAZY | RTLD_GLOBAL` flag.
-Thus a platform-related macro shall be imposed.
+Refer to the library support discussed in [ramulator2.md](../src/ramulator2.md).
