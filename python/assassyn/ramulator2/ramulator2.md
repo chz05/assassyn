@@ -181,3 +181,8 @@ All implementations must produce **identical output** when given the same:
 - Simulation parameters
 
 This validates that the language bindings correctly interface with the core `libramulator` library (with OS-appropriate extension) and maintain behavioral consistency across different programming languages and operating systems.
+
+## Cross-platform Support
+
+As per [simulator.md](../codegen/simulator/simulator.md), libloading shall have a OS-dependent behavior.
+This should be handled accordingly in Python, too.
