@@ -1,6 +1,46 @@
-use libloading::{Library, Symbol};
 use std::error::Error;
 use std::ffi::{c_char, c_void, CString};
+
+// Platform-specific libloading imports
+#[cfg(target_os = "macos")]
+use libloading::os::unix::{Library, Symbol, RTLD_GLOBAL, RTLD_LAZY};
+
+#[cfg(target_os = "linux")]
+use libloading::{Library, Symbol};
+
+#[cfg(not(any(target_os = "macos", target_os = "linux")))]
+use libloading::{Library, Symbol};
+
+// Platform-specific library loading macro
+#[cfg(target_os = "macos")]
+macro_rules! load_library {
+    ($path:expr) => {
+        {
+            let path_with_ext = format!("{}.dylib", $path);
+            unsafe { Library::open(Some(&path_with_ext), RTLD_GLOBAL | RTLD_LAZY)? }
+        }
+    };
+}
+
+#[cfg(target_os = "linux")]
+macro_rules! load_library {
+    ($path:expr) => {
+        {
+            let path_with_ext = format!("{}.so", $path);
+            unsafe { Library::new(&path_with_ext)? }
+        }
+    };
+}
+
+#[cfg(not(any(target_os = "macos", target_os = "linux")))]
+macro_rules! load_library {
+    ($path:expr) => {
+        {
+            let path_with_ext = format!("{}.dll", $path);
+            unsafe { Library::new(&path_with_ext)? }
+        }
+    };
+}
 
 #[repr(C)]
 pub struct Request {
@@ -94,5 +134,14 @@ impl Drop for MemoryInterface {
         self.lib.get(b"dram_delete").unwrap();
       dram_delete(self.wrapper);
     }
+  }
+}
+
+// Platform-independent constructor for MemoryInterface
+impl MemoryInterface {
+  /// Create a new MemoryInterface with platform-specific library loading
+  pub fn new_from_path(lib_path: &str) -> Result<Self, Box<dyn Error>> {
+    let lib = load_library!(lib_path);
+    unsafe { Self::new(lib) }
   }
 }

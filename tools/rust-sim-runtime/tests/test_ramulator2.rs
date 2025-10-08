@@ -1,37 +1,8 @@
-use libloading::Library;
 use std::ffi::c_void;
 use std::env;
 use std::path::Path;
 
-use sim_runtime::ramulator2::{MemoryInterface, Request, RequestCallback};
-
-fn get_shared_lib_extension() -> &'static str {
-  if cfg!(target_os = "windows") {
-    ".dll"
-  } else if cfg!(target_os = "macos") {
-    ".dylib"
-  } else {
-    ".so"
-  }
-}
-
-fn load_shared_library(lib_path: &str) -> Result<Library, Box<dyn std::error::Error>> {
-  let ext = get_shared_lib_extension();
-  let primary_path = format!("{}{}", lib_path, ext);
-  if Path::new(&primary_path).exists() {
-    return Ok(unsafe { Library::new(&primary_path)? });
-  }
-  let fallback_extensions = [".so", ".dll", ".dylib"];
-  for fallback_ext in &fallback_extensions {
-    if *fallback_ext != ext {
-      let fallback_path = format!("{}{}", lib_path, fallback_ext);
-      if Path::new(&fallback_path).exists() {
-        return Ok(unsafe { Library::new(&fallback_path)? });
-      }
-    }
-  }
-  Err(format!("Could not find shared library at {} with any supported extension", lib_path).into())
-}
+use sim_runtime::ramulator2::{MemoryInterface, Request};
 
 extern "C" fn request_callback(req: *mut Request, ctx: *mut c_void) {
   unsafe {
@@ -52,13 +23,8 @@ fn test_ramulator2_outputs_match_cpp() -> Result<(), Box<dyn std::error::Error>>
   let config_path = format!("{}/tools/c-ramulator2-wrapper/configs/example_config.yaml", home);
   assert!(Path::new(&config_path).exists(), "Config file not found at {}", config_path);
 
-  let lib_ramulator_path = format!("{}/3rd-party/ramulator2/libramulator", home);
-  let _ramulator_lib = load_shared_library(&lib_ramulator_path)?;
-
   let lib_path = format!("{}/tools/c-ramulator2-wrapper/build/lib/libwrapper", home);
-  let lib = load_shared_library(&lib_path)?;
-
-  let memory = unsafe { MemoryInterface::new(lib.into())? };
+  let memory = MemoryInterface::new_from_path(&lib_path)?;
 
   unsafe { memory.init(&config_path); }
 
