@@ -87,6 +87,9 @@ jobs:
       - name: Rust Wrapper Tests
         run: |
           ${{ env.ASSASSYN_DOCKER }} /bin/zsh -c "source setup.sh && cd tools/rust-sim-runtime && cargo test"
+      - name: Python Unit Tests
+        run: |
+          ${{ env.ASSASSYN_DOCKER }} /bin/zsh -c "source setup.sh && python -m pytest -n 8 python/unit-tests"
       - name: Python Frontend Unit Tests
         run: |
           ${{ env.ASSASSYN_DOCKER }} /bin/zsh -c "source setup.sh && source scripts/init/py-package.sh && source scripts/init/circt.sh && python -m pytest -n 8 python/ci-tests"

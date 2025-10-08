@@ -29,3 +29,8 @@ if [ $? -ne 0 ]; then
     echo "Tests failed, please fix the issues before committing."
     exit 1
 fi
+pytest -n 8 -x $ASSASSYN_HOME/python/unit-tests
+if [ $? -ne 0 ]; then
+    echo "Unit tests failed, please fix the issues before committing."
+    exit 1
+fi
