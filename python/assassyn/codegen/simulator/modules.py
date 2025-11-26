@@ -183,6 +183,10 @@ use std::ffi::c_void;
 
         if req.type_id == 0 {{
             // Read response
+            sim.{module_name}_fifo.push.push(FIFOPush::new(stamp + 100*cycles, 
+                sim.DRAM_val.payload[req.addr as usize].clone().try_into().unwrap(),
+                "{module_name}",
+            ));
             sim.{module_name}_response.valid = true;
             sim.{module_name}_response.addr = req.addr as usize;
             sim.{module_name}_response.data = vec![

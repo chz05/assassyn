@@ -126,15 +126,16 @@ def dump_simulator( #pylint: disable=too-many-locals, too-many-branches, too-man
         dram_name = namify(dram.name)
         fd.write(f"pub mi_{dram_name}: MemoryInterface,\n")
         fd.write(f"pub {dram_name}_response: Response,\n")
+        fd.write(f"pub {dram_name}_fifo: FIFO<u32>,\n")
+        simulator_init.append(f"{dram_name}_fifo: FIFO::new(),")
     # Add array fields to simulator struct
     for array in sys.arrays:
         owner = array.owner
-        if isinstance(owner, MemoryBase) and array.is_payload(owner) and owner in dram_modules:
-            continue
+        # if isinstance(owner, MemoryBase) and array.is_payload(owner) and owner in dram_modules:
+        #     continue
         name = namify(array.name)
         dtype = dtype_to_rust_type(array.scalar_ty)
         num_ports = port_manager.get_port_count(name)
-
         fd.write(f"pub {name} : Array<{dtype}>, ")
         # Handle array initialization with pre-allocated ports
         if array.initializer:

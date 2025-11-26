@@ -42,14 +42,14 @@ def _codegen_has_mem_resp(node, module_ctx):
     """Generate code for HAS_MEM_RESP intrinsic."""
     dram_module = node.args[0]
     dram_name = namify(dram_module.name)
-    return f"sim.{dram_name}_response.valid"
-
+    return f"!sim.DRAM_val.payload.is_empty()"
 
 def _codegen_get_mem_resp(node, module_ctx):
     """Generate code for GET_MEM_RESP intrinsic."""
     dram_module = node.args[0]
     dram_name = namify(dram_module.name)
-    return f"BigUint::from_bytes_le(&sim.{dram_name}_response.data)"
+    return f"sim.DRAM_val.payload.first().unwrap().clone()"
+    # return f"BigUint::from_bytes_le(&sim.{dram_name}_response.data)"
 
 
 def _codegen_external_output_read(node, module_ctx, **_kwargs):
@@ -163,6 +163,7 @@ def _codegen_send_write_request(node, module_ctx):
     dram_name = namify(dram_module.name)
     we_val = dump_rval_ref(module_ctx, we)
     addr_val = dump_rval_ref(module_ctx, addr)
+    data_val = dump_rval_ref(module_ctx, data)
     return f"""if {we_val} {{
                         unsafe {{
                             let mem_interface = &sim.mi_{dram_name};
@@ -172,6 +173,15 @@ def _codegen_send_write_request(node, module_ctx):
                                 crate::modules::{dram_name}::callback_of_{dram_name},
                                 sim as *const _ as *mut _,
                             );
+                            if success {{
+                                let write = ArrayWrite::new(
+                                    sim.stamp,
+                                    {addr_val} as usize,
+                                    {data_val} as u32,
+                                    "{dram_name}_writer",
+                                );
+                                sim.DRAM_val.write(0, write);
+                            }}
                             success
                         }}
                     }} else {{
